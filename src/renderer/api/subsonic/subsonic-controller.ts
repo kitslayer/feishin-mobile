@@ -262,6 +262,9 @@ function buildGetTranscodeStreamUrl(
         v: '1.13.0',
     });
 
+    // NOTE: this path still uses server.url directly -- the param is a
+    // structural {credential,url}, not a ServerListItem, so getServerUrl does
+    // not apply. Worth revisiting if preferRemoteUrl matters for transcodes.
     return `${server?.url}/rest/getTranscodeStream.view?${params.toString()}&${server?.credential}`;
 }
 
@@ -969,7 +972,7 @@ export const SubsonicController: InternalControllerEndpoint = {
         const { apiClientProps, query } = args;
 
         return (
-            `${apiClientProps.server?.url}/rest/download.view` +
+            `${getServerUrl(apiClientProps.server)}/rest/download.view` +
             `?id=${query.id}` +
             `&${apiClientProps.server?.credential}` +
             '&v=1.13.0' +
@@ -1962,7 +1965,11 @@ export const SubsonicController: InternalControllerEndpoint = {
         const { server } = apiClientProps;
         const { bitrate, format, id, mediaType = 'song', skipAutoTranscode, transcode } = query;
 
-        const streamUrl = `${server?.url}/rest/stream.view?id=${id}&v=1.13.0&c=Feishin&${server?.credential}`;
+        // Cover art goes through getServerUrl (which honours preferRemoteUrl)
+        // but audio used server.url directly, so on a server configured with a
+        // remote URL the artwork resolved remotely while the stream pointed at
+        // the LAN address -- i.e. playback broke precisely when off the LAN.
+        const streamUrl = `${getServerUrl(server)}/rest/stream.view?id=${id}&v=1.13.0&c=Feishin&${server?.credential}`;
 
         // If transcoding is explicitly enabled, just return the direct transcoded stream URL
         if (transcode) {

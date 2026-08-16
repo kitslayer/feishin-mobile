@@ -18,6 +18,7 @@ import {
     useSkipButtons,
     useTimestampStoreBase,
 } from '/@/renderer/store';
+import { subscribePlayerProgress } from '/@/renderer/store/timestamp.store';
 import { LibraryItem, QueueSong } from '/@/shared/types/domain-types';
 import { PlayerStatus, PlayerType } from '/@/shared/types/types';
 
@@ -272,6 +273,47 @@ export const useMediaSession = () => {
             unsubscribeStatus();
         };
     }, [debouncedUpdateMetadata]);
+
+    // setPositionState() was never called anywhere in the app, so the lock
+    // screen and Control Centre had to infer elapsed time from the media
+    // element -- and with two <audio> elements behind a Web Audio graph, that
+    // guess is wrong or frozen. Publish it explicitly.
+    //
+    // Units differ between the two sources: the timestamp store holds seconds
+    // (react-player's playedSeconds) while song.duration is milliseconds.
+    useEffect(() => {
+        if (!isMediaSessionEnabled || typeof mediaSession?.setPositionState !== 'function') {
+            return;
+        }
+
+        const publish = () => {
+            const song = usePlayerStore.getState().getCurrentSong();
+            const durationSeconds = (song?.duration ?? 0) / 1000;
+
+            if (!durationSeconds || durationSeconds <= 0) {
+                return;
+            }
+
+            const positionSeconds = Math.min(
+                Math.max(useTimestampStoreBase.getState().timestamp ?? 0, 0),
+                durationSeconds,
+            );
+
+            try {
+                mediaSession.setPositionState({
+                    duration: durationSeconds,
+                    playbackRate: 1,
+                    position: positionSeconds,
+                });
+            } catch {
+                // Safari throws if position briefly exceeds duration during a
+                // track transition. Not worth surfacing.
+            }
+        };
+
+        publish();
+        return subscribePlayerProgress(publish);
+    }, [isMediaSessionEnabled]);
 
     // onPlayerRepeated fires via eventEmitter (not Zustand), so usePlayerEvents is safe here —
     // the event emitter uses stable function references for on/off and does not re-subscribe
