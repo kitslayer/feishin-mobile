@@ -62,7 +62,11 @@
     align-items: center;
     justify-content: flex-start;
     width: 100%;
-    padding: 1rem;
+    /* The app renders edge-to-edge (viewport-fit=cover), so without the top
+       inset this row sits underneath the status bar / Dynamic Island and the
+       minimize button cannot be tapped at all. */
+    padding: calc(1rem + env(safe-area-inset-top)) calc(1rem + env(safe-area-inset-right))
+        1rem calc(1rem + env(safe-area-inset-left));
 }
 
 .header-info {

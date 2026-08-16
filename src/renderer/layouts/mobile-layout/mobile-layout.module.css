@@ -5,8 +5,13 @@
         'window-bar'
         'main-content'
         'player';
+    /* Grow the player row by the home-indicator inset so the bar's controls
+       are not sitting underneath it on a gesture-nav iPhone. */
     grid-template-rows: 0 calc(100vh - 90px) 90px;
-    grid-template-rows: 0 calc(100dvh - 90px) 90px;
+    grid-template-rows:
+        0
+        calc(100dvh - 90px - env(safe-area-inset-bottom))
+        calc(90px + env(safe-area-inset-bottom));
     grid-template-columns: 1fr;
     gap: 0;
     width: 100vw;

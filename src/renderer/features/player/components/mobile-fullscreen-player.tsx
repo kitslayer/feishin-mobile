@@ -398,6 +398,20 @@ export const MobileFullscreenPlayer = () => {
         setFullScreenPlayerStore({ expanded: false });
     }, [setFullScreenPlayerStore]);
 
+    // Dismiss on a downward flick, or on a slow drag past a third of the
+    // screen. Velocity is checked first so a quick flick works even when the
+    // finger barely travels.
+    const handleSwipeDismiss = useCallback(
+        (_event: unknown, info: { offset: { y: number }; velocity: { y: number } }) => {
+            const flicked = info.velocity.y > 500;
+            const dragged = info.offset.y > window.innerHeight / 3;
+            if (flicked || dragged) {
+                handleToggleFullScreenPlayer();
+            }
+        },
+        [handleToggleFullScreenPlayer],
+    );
+
     const handleToggleContextMenu = useCallback(
         (e: MouseEvent<HTMLButtonElement | HTMLDivElement>) => {
             e.preventDefault();
@@ -467,6 +481,15 @@ export const MobileFullscreenPlayer = () => {
                     zIndex: isPlayerState ? 2 : 1,
                 }}
                 className={styles.playerState}
+                // Swipe down to dismiss, the way every iOS now-playing screen
+                // behaves. Only the player tab is draggable -- the queue and
+                // lyrics tabs scroll, and a vertical drag there would fight
+                // the scroll gesture.
+                drag={isPlayerState ? 'y' : false}
+                dragConstraints={{ bottom: 0, top: 0 }}
+                dragDirectionLock
+                dragElastic={{ bottom: 0.7, top: 0 }}
+                onDragEnd={handleSwipeDismiss}
                 onMouseEnter={() => setIsPageHovered(true)}
                 onMouseLeave={() => setIsPageHovered(false)}
                 transition={{ duration: 0.3, ease: 'easeInOut' }}
