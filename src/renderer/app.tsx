@@ -81,7 +81,10 @@ const AppShell = memo(function AppShell() {
     const notificationStyles = useMemo(
         () => ({
             root: {
-                marginBottom: 90,
+                // The player bar is 90px + the home-indicator inset, but the
+                // notifications container only offsets 16px from the bottom,
+                // so a bare 90 leaves the toast sitting on top of the bar.
+                marginBottom: 'calc(90px + env(safe-area-inset-bottom))',
             },
         }),
         [],

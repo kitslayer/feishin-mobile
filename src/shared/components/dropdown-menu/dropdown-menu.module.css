@@ -44,6 +44,12 @@
 }
 
 .menu-dropdown {
+    /* Long sort/filter menus overflow a phone screen, and body is
+       overflow:hidden so the remainder is otherwise unreachable. */
+    max-height: min(36rem, 60dvh);
+    overflow: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
     padding: var(--theme-spacing-xs);
     color: var(--theme-colors-foreground);
     background: var(--theme-colors-background);

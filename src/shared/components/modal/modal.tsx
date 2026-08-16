@@ -30,11 +30,21 @@ export interface ModalProps extends Omit<MantineModalProps, 'onClose'> {
     };
 }
 
+const MODAL_X_OFFSET =
+    'max(5vw, calc(env(safe-area-inset-left) + 12px), calc(env(safe-area-inset-right) + 12px))';
+const MODAL_Y_OFFSET =
+    'max(5dvh, calc(env(safe-area-inset-top) + 8px), calc(env(safe-area-inset-bottom) + 8px))';
+
 export const Modal = ({ children, classNames, handlers, ...rest }: ModalProps) => {
     return (
         <MantineModal
             {...rest}
             centered={true}
+            // 5dvh (~48px) is less than safe-area-inset-top (~62px) on a
+            // Dynamic Island iPhone, so a tall modal's header and close button
+            // land under the island. Clamp to whichever is larger.
+            xOffset={MODAL_X_OFFSET}
+            yOffset={MODAL_Y_OFFSET}
             classNames={{
                 body: styles.body,
                 close: styles.close,
@@ -136,6 +146,8 @@ export const ModalsProvider = ({ children, ...rest }: ModalsProviderProps) => {
         <MantineModalsProvider
             modalProps={{
                 centered: true,
+                xOffset: MODAL_X_OFFSET,
+                yOffset: MODAL_Y_OFFSET,
                 classNames: {
                     body: styles.body,
                     close: styles.close,

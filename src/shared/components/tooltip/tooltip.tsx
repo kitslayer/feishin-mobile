@@ -11,6 +11,8 @@ const DEFAULT_TRANSITION_PROPS = {
     transition: 'fade',
 } as const;
 
+const MOBILE_TOOLTIP_EVENTS = { focus: true, hover: true, touch: true };
+
 const TooltipComponent = memo(
     ({
         children,
@@ -37,6 +39,12 @@ const TooltipComponent = memo(
             <MantineTooltip
                 arrowSize={10}
                 classNames={memoizedClassNames}
+                // Mantine defaults events.touch to false, which makes Floating
+                // UI's useHover mouseOnly. Every pointer in a WKWebView is
+                // pointerType:"touch", so without this NO tooltip in the app
+                // can ever open on the phone -- and a lot of icon-only controls
+                // have no other label.
+                events={MOBILE_TOOLTIP_EVENTS}
                 multiline
                 openDelay={openDelay}
                 transitionProps={memoizedTransitionProps}

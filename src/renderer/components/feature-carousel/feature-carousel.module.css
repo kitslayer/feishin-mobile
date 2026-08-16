@@ -39,6 +39,11 @@
     background-size: cover;
     opacity: 0.8;
     transform: scale(1.1);
+
+    /* Decorative only. Being absolutely positioned with z-index 0 put it above
+       the unpositioned .carousel-link, so it swallowed taps anywhere the text
+       did not cover -- the whole card was dead on touch. */
+    pointer-events: none;
 }
 
 .carousel-item :global(.overlay) {
@@ -46,6 +51,8 @@
 }
 
 .carousel-link {
+    position: relative;
+    z-index: 1;
     display: block;
     width: 100%;
     height: 100%;

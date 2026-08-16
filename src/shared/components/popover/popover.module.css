@@ -1,4 +1,9 @@
 .dropdown {
+    /* The size middleware writes an inline max-height; without a scroll
+       container the overflow is clipped and unreachable. */
+    overflow: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
     padding: var(--theme-spacing-sm);
     color: var(--theme-colors-foreground);
     background: var(--theme-colors-background);

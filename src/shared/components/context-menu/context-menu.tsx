@@ -251,6 +251,7 @@ function SubmenuContent(props: SubmenuContentProps) {
                 <RadixContextMenu.Portal forceMount>
                     <RadixContextMenu.SubContent
                         className={styles.content}
+                        collisionPadding={{ bottom: 28, left: 12, right: 12, top: 12 }}
                         onMouseEnter={handleMouseEnter}
                         onMouseLeave={handleMouseLeave}
                     >
@@ -318,6 +319,19 @@ function SubmenuTarget(props: SubmenuTargetProps) {
             disabled={disabled}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
+            // The hover handlers above are the only way this submenu opens, and
+            // there is no hover on a touch screen -- so every submenu was
+            // unreachable on the phone. Toggle directly on a touch press.
+            onPointerDown={(event) => {
+                if (event.pointerType === 'mouse' || disabled) return;
+                event.preventDefault();
+                cancelCloseTimeout();
+                if (openTimeoutRef.current) {
+                    clearTimeout(openTimeoutRef.current);
+                    openTimeoutRef.current = null;
+                }
+                setOpen((prev) => !prev);
+            }}
         >
             {children}
         </RadixContextMenu.SubTrigger>

@@ -12,6 +12,8 @@ import { ReactNode } from 'react';
 
 import styles from './dropdown-menu.module.css';
 
+import { FLOATING_MIDDLEWARES } from '/@/shared/components/popover/popover';
+
 import { createPolymorphicComponent } from '/@/shared/utils/create-polymorphic-component';
 
 export interface MenuItemProps extends MantineMenuItemProps {
@@ -51,6 +53,10 @@ export const DropdownMenu = ({ children, ...props }: MenuProps) => {
                 dropdown: styles['menu-dropdown'],
                 itemSection: styles['menu-item-section'],
             }}
+            // Same Mantine defaults problem as Popover: shift padding of 5px
+            // and no size middleware, so long sort/filter menus (17+ entries)
+            // run off the bottom with no way to scroll to the rest.
+            middlewares={FLOATING_MIDDLEWARES}
             offset={10}
             transitionProps={{
                 transition: getTransition(props.position),
