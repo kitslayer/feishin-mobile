@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router';
 
 import { useAppTracker } from '/@/renderer/features/analytics/hooks/use-app-tracker';
+import { useDownloadsBootstrap } from '/@/renderer/features/downloads/hooks/use-downloads-bootstrap';
 import { CommandPalette } from '/@/renderer/features/search/components/command-palette';
 import { useGarbageCollection } from '/@/renderer/hooks/use-garbage-collection';
 import { HotkeyItem, useHotkeys } from '/@/renderer/hooks/use-hotkeys';
@@ -55,6 +56,7 @@ const usePointerTypeFlag = () => {
 export const ResponsiveLayout = ({ shell }: ResponsiveLayoutProps) => {
     useAppTracker();
     usePointerTypeFlag();
+    useDownloadsBootstrap();
 
     return (
         <>

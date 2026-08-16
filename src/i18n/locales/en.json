@@ -177,7 +177,9 @@
         "newVersionAvailable": "A new version is available",
         "scanFolderCount": "{{count}} folders",
         "scanItemCount": "{{count}} items",
-        "scanningLibrary": "Scanning library…"
+        "scanningLibrary": "Scanning library…",
+        "error": "error",
+        "remove": "remove"
     },
     "entity": {
         "album_one": "Album",
@@ -727,6 +729,13 @@
             "artistTracks": "Tracks by {{artist}}",
             "genreTracks": "\"{{genre}}\" $t(entity.track, {\"count\": 2})",
             "title": "$t(entity.track, {\"count\": 2})"
+        },
+        "downloads": {
+            "empty": "Nothing downloaded yet. Use Download from an album, playlist or track menu to save it for offline playback.",
+            "inProgress": "Downloading",
+            "nativeOnly": "Offline downloads are only available in the installed app, not in a browser.",
+            "removeAll": "Remove all downloads",
+            "title": "downloads"
         }
     },
     "player": {

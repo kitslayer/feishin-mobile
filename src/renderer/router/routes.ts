@@ -31,5 +31,6 @@ export enum AppRoute {
     RADIO = '/radio',
     SEARCH = '/search/:itemType',
     SERVERS = '/servers',
+    DOWNLOADS = '/downloads',
     SETTINGS = '/settings',
 }
