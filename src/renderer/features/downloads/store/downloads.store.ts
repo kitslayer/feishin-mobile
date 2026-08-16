@@ -11,6 +11,7 @@ import { del, get, set } from 'idb-keyval';
 
 import { QueueSong, Song } from '/@/shared/types/domain-types';
 import { create } from 'zustand';
+import { useShallow } from 'zustand/react/shallow';
 import { devtools, subscribeWithSelector } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
 
@@ -211,14 +212,21 @@ export const useDownloadJob = (
 
 export const useIsOffline = () => useDownloadsStore((state) => state.offline);
 
+/**
+ * Returns a fresh object, so it MUST be compared shallowly -- without this the
+ * selector never compares equal and React re-renders until it throws
+ * "Maximum update depth exceeded".
+ */
 export const useDownloadsUsage = () =>
-    useDownloadsStore((state) => {
-        const tracks = Object.values(state.catalog);
-        return {
-            bytes: tracks.reduce((sum, track) => sum + track.bytes, 0),
-            count: tracks.length,
-        };
-    });
+    useDownloadsStore(
+        useShallow((state) => {
+            const tracks = Object.values(state.catalog);
+            return {
+                bytes: tracks.reduce((sum, track) => sum + track.bytes, 0),
+                count: tracks.length,
+            };
+        }),
+    );
 
 /** Synchronous local cover-art lookup -- safe during render. */
 export const getDownloadedArt = (
