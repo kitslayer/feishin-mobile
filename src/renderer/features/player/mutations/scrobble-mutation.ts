@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 
 import { api } from '/@/renderer/api';
+import { scrobbleOutbox } from '/@/renderer/features/downloads/services/scrobble-outbox';
 import { queryKeys } from '/@/renderer/api/query-keys';
 import { MutationOptions } from '/@/renderer/lib/react-query';
 import { incrementQueuePlayCount } from '/@/renderer/store/player.store';
@@ -11,11 +12,22 @@ export const useSendScrobble = (options?: MutationOptions) => {
     const queryClient = useQueryClient();
 
     return useMutation<ScrobbleResponse, AxiosError, ScrobbleArgs, null>({
-        mutationFn: (args) => {
-            return api.controller.scrobble({
-                ...args,
-                apiClientProps: { serverId: args.apiClientProps.serverId },
-            });
+        mutationFn: async (args) => {
+            try {
+                return await api.controller.scrobble({
+                    ...args,
+                    apiClientProps: { serverId: args.apiClientProps.serverId },
+                });
+            } catch (error) {
+                // A failed submission would otherwise be lost: the caller marks
+                // the track scrobbled right after mutate() rather than in
+                // onSuccess, and react-query pauses (not fails) mutations while
+                // offline. Persist it so the play survives an app kill.
+                if (args.query.submission) {
+                    await scrobbleOutbox.enqueue(args);
+                }
+                throw error;
+            }
         },
         onSuccess: (_data, variables) => {
             // Manually increment the play count for the song in the queue if scrobble was submitted

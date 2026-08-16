@@ -2069,7 +2069,9 @@ const initialState: SettingsState = {
             gaplessAudio: 'weak',
             replayGainClip: true,
             replayGainFallbackDB: undefined,
-            replayGainMode: 'no',
+            // ReplayGain is implemented and works on the web player; it was just
+            // defaulted off, so volume jumped between tracks out of the box.
+            replayGainMode: 'track',
             replayGainPreampDB: 0,
         },
         preservePitch: true,

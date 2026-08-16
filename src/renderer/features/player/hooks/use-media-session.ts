@@ -197,17 +197,27 @@ export const useMediaSession = () => {
                 return;
             }
 
-            const imageUrl = getItemImageUrl({
-                id: song?.imageId || undefined,
-                imageUrl: song?.imageUrl,
-                itemType: LibraryItem.SONG,
-                type: 'itemCard',
-            });
+            // A single 300px entry declared as image/png was wrong twice over:
+            // the lock screen wants something far larger than 300px, and
+            // Subsonic's getCoverArt returns JPEG. Offer a range of sizes and
+            // let iOS pick; omit the type rather than assert the wrong one.
+            const artwork = [96, 256, 512, 1024]
+                .map((size) => ({
+                    size,
+                    src: getItemImageUrl({
+                        id: song?.imageId || undefined,
+                        imageUrl: song?.imageUrl,
+                        itemType: LibraryItem.SONG,
+                        size,
+                    }),
+                }))
+                .filter((entry): entry is { size: number; src: string } => Boolean(entry.src))
+                .map((entry) => ({ sizes: `${entry.size}x${entry.size}`, src: entry.src }));
 
             mediaSession.metadata = new MediaMetadata({
                 album: song?.album ?? '',
                 artist: song?.artistName ?? '',
-                artwork: imageUrl ? [{ src: imageUrl, type: 'image/png' }] : [],
+                artwork,
                 title: song?.name ?? '',
             });
         },

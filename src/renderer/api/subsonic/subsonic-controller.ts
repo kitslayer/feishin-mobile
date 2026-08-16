@@ -2312,6 +2312,9 @@ export const SubsonicController: InternalControllerEndpoint = {
                 query: {
                     id: query.id,
                     submission: query.submission,
+                    // Only sent when a scrobble is being replayed from the
+                    // offline outbox, so it lands at the real listen time.
+                    ...(query.time ? { time: query.time } : {}),
                 },
             });
 

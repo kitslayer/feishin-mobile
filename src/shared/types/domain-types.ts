@@ -1433,6 +1433,12 @@ export type ScrobbleQuery = {
     playbackRate: number;
     position?: number;
     submission: boolean;
+    /**
+     * Epoch ms the play actually happened. Only needed when a scrobble is sent
+     * later than it occurred (offline queue), so it is not misdated to the time
+     * it was finally synced.
+     */
+    time?: number;
 };
 
 // Scrobble

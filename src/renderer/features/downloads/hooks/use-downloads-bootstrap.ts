@@ -6,6 +6,7 @@ import {
     downloadsActions,
     useDownloadsStore,
 } from '/@/renderer/features/downloads/store/downloads.store';
+import { scrobbleOutbox } from '/@/renderer/features/downloads/services/scrobble-outbox';
 import { fileExists, isNative } from '/@/renderer/features/downloads/utils/offline-storage';
 import { logger } from '/@/renderer/utils/logger';
 
@@ -55,15 +56,24 @@ export const useDownloadsBootstrap = () => {
             // reachability signal instead.
             const status = await Network.getStatus();
             downloadsActions.setOffline(!status.connected);
+            if (status.connected) {
+                void scrobbleOutbox.flush();
+            }
 
             const networkHandle = await Network.addListener('networkStatusChange', (next) => {
                 downloadsActions.setOffline(!next.connected);
+                if (next.connected) {
+                    void scrobbleOutbox.flush();
+                }
             });
             removeNetwork = () => void networkHandle.remove();
 
             const resumeHandle = await App.addListener('resume', async () => {
                 const current = await Network.getStatus();
                 downloadsActions.setOffline(!current.connected);
+                if (current.connected) {
+                    void scrobbleOutbox.flush();
+                }
             });
             removeResume = () => void resumeHandle.remove();
         };
