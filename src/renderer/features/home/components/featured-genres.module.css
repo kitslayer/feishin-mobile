@@ -87,3 +87,10 @@
     opacity: 1;
     transform: translateY(-50%) translateX(0);
 }
+
+/* Invisible but still hit-testable: tapping near the right edge of a genre
+   tile silently replaced the queue instead of navigating. */
+html[data-pointer='coarse'] .play-button-wrapper {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+}

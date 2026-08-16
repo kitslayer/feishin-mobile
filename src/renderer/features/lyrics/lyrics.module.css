@@ -86,3 +86,15 @@
 .lyrics-container:hover .settings-icon {
     opacity: 1;
 }
+
+/* This bar keeps pointer-events on its buttons while sitting at opacity 0, so
+   on touch it is an invisible strip of live controls across the lyrics view --
+   a tap there fires a random lyric action. Make it visible instead. */
+html[data-pointer='coarse'] .actions-container {
+    pointer-events: auto;
+    opacity: 1;
+}
+
+html[data-pointer='coarse'] .settings-icon {
+    opacity: 1;
+}

@@ -43,3 +43,13 @@
 .disabled {
     opacity: 0.6;
 }
+
+/* iOS zooms the whole page when focusing an input under 16px, and every input
+   here defaults to size="sm" (14px). The viewport meta deliberately allows
+   pinch-zoom, so the only fix is to meet the threshold. */
+@media (pointer: coarse) {
+    .input {
+        min-height: 44px;
+        font-size: 16px;
+    }
+}

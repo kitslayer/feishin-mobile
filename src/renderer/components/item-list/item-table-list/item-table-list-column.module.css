@@ -321,6 +321,18 @@
     display: flex;
 }
 
+/* On touch there is no hover, and data-row-hovered is cleared on pointerout
+   (which fires at touch-end), so these controls could never be revealed --
+   the per-row context menu, and the ability to favourite or rate a track for
+   the first time, were simply unreachable on the phone. */
+:global(html[data-pointer='coarse']) .container :global(.hover-only) {
+    display: block;
+}
+
+:global(html[data-pointer='coarse']) .container :global(.hover-only-flex) {
+    display: flex;
+}
+
 .container :global(.hide-on-hover) {
     display: block;
 }

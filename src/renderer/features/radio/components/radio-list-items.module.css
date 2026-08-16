@@ -72,3 +72,11 @@
     pointer-events: auto;
     opacity: 1;
 }
+
+/* Edit and delete are only ever reachable through these buttons, and the
+   reveal is hover-only -- so on a phone a radio station could not be edited
+   or deleted at all. */
+html[data-pointer='coarse'] .radio-item-actions {
+    pointer-events: auto;
+    opacity: 1;
+}

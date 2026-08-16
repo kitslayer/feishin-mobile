@@ -34,6 +34,24 @@ const ctx = await browser.newContext({
 const page = await ctx.newPage();
 page.on('pageerror', (e) => log('  [pageerror]', String(e).slice(0, 160)));
 
+
+// Dismissing the changelog modal via a real pointer is flaky -- it is portaled
+// and its own children intercept the hit test. Click it in-page instead.
+const dismissModals = async () => {
+    for (let i = 0; i < 4; i++) {
+        const clicked = await page.evaluate(() => {
+            const btns = [...document.querySelectorAll('button')];
+            const target = btns.find((b) => /^(dismiss|close|ok|got it)$/i.test((b.textContent || '').trim()));
+            if (target) { target.click(); return true; }
+            return false;
+        });
+        if (!clicked) break;
+        await page.waitForTimeout(700);
+    }
+    await page.waitForTimeout(400);
+    return await page.locator('[role="dialog"]').count();
+};
+
 await page.goto(URL, { waitUntil: 'domcontentloaded' });
 await page.waitForTimeout(3000);
 
@@ -66,11 +84,9 @@ if (await dlg.count()) {
             !!db && db.y + db.height <= vp.height && db.x + db.width <= vp.width,
             db ? `at ${Math.round(db.x)},${Math.round(db.y)} ${Math.round(db.width)}x${Math.round(db.height)}` : 'not found',
         );
-        await dismiss.click({ force: true, timeout: 5000 }).catch((e) => log('  dismiss failed:', e.message.slice(0, 60)));
-        await page.waitForTimeout(1000);
     }
 }
-check('modal cleared', (await page.locator('[role="dialog"]').count()) === 0);
+check('modal cleared', (await dismissModals()) === 0);
 
 // ---- log in ----
 if (await page.locator('input[type=password]').count()) {
@@ -90,39 +106,41 @@ check('logged in / past server form', !(await page.locator('input[type=password]
 
 // The "a new version has been installed" changelog modal renders in a portal
 // and swallows every pointer event underneath it until dismissed.
-for (let i = 0; i < 3; i++) {
-    const dismiss = page.getByRole('button', { name: /^(Dismiss|Close|OK|Got it)$/i }).first();
-    if (await dismiss.count().catch(() => 0)) {
-        await dismiss.click({ timeout: 3000 }).catch(() => {});
-        await page.waitForTimeout(800);
-    } else break;
-}
-await page.keyboard.press('Escape').catch(() => {});
-await page.waitForTimeout(600);
-const blocked = await page.locator('[data-portal="true"] [role="dialog"], [role="dialog"]').count();
+const blocked = await dismissModals();
 check('no modal blocking the UI', blocked === 0, `dialogs=${blocked}`);
 
-// ---- find something playable and start it ----
+// ---- navigate to an album and actually start playback ----
 log('\n== start playback ==');
-await page.waitForTimeout(2000);
-const rows = page.locator('[role="row"], [class*="item-card"], [class*="album"]');
-log('  candidate items:', await rows.count());
+await page.goto(URL + '/#/library/albums', { waitUntil: 'domcontentloaded' });
+await page.waitForTimeout(4500);
+const albums = page.locator('a[href*="/library/albums/"]');
+check('album library lists items', (await albums.count()) > 0, `${await albums.count()} albums`);
+await albums.first().tap({ timeout: 6000 }).catch(() => {});
+await page.waitForTimeout(3500);
+check('album detail opens on tap', page.url().includes('/library/albums/'), page.url().split('#')[1]);
 
-// Tap the first playable-looking thing, then look for the player bar.
-if (await rows.count()) {
-    await rows.first().tap({ timeout: 5000 }).catch(() => {});
-    await page.waitForTimeout(2500);
+const playBtn = page.getByRole('button', { name: /^Play$/ }).first();
+if (await playBtn.count()) {
+    await playBtn.tap({ timeout: 6000 }).catch((e) => log('  play tap:', e.message.slice(0, 60)));
+    await page.waitForTimeout(4000);
 }
 
+const playing = await page.evaluate(() => {
+    try {
+        const s = JSON.parse(localStorage.getItem('feishin') || '{}')?.state;
+        return { hasCurrent: !!s?.current?.song, status: s?.current?.status };
+    } catch { return { hasCurrent: false }; }
+});
+check('playback started', playing.hasCurrent === true, JSON.stringify(playing));
+
 const playerbar = page.locator('[class*="mobile-playerbar"], [class*="playerbar"]').first();
-const hasBar = await playerbar.count();
-check('player bar present', !!hasBar);
+check('player bar present', (await playerbar.count()) > 0);
 
 // ---- open the fullscreen player ----
 log('\n== fullscreen player ==');
-if (hasBar) {
+if (await playerbar.count()) {
     await playerbar.tap({ timeout: 5000 }).catch(() => {});
-    await page.waitForTimeout(1500);
+    await page.waitForTimeout(1800);
 }
 
 const isExpanded = async () =>

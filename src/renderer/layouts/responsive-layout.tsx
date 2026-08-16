@@ -31,8 +31,30 @@ const ResponsiveLayoutBase = ({ shell }: ResponsiveLayoutProps) => {
     return <DefaultLayout shell={shell} />;
 };
 
+/**
+ * Flags the document as a coarse (touch) pointer so CSS can escalate rules that
+ * are otherwise hover-only. A lot of this UI hides controls behind `:hover`,
+ * which on a phone means they can never be revealed at all -- row actions,
+ * favourite/rating buttons, radio station edit/delete and so on.
+ */
+const usePointerTypeFlag = () => {
+    useEffect(() => {
+        const query = window.matchMedia('(pointer: coarse)');
+
+        const apply = () => {
+            document.documentElement.dataset.pointer = query.matches ? 'coarse' : 'fine';
+        };
+
+        apply();
+        query.addEventListener('change', apply);
+
+        return () => query.removeEventListener('change', apply);
+    }, []);
+};
+
 export const ResponsiveLayout = ({ shell }: ResponsiveLayoutProps) => {
     useAppTracker();
+    usePointerTypeFlag();
 
     return (
         <>

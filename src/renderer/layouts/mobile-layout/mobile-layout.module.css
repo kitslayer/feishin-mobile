@@ -5,12 +5,14 @@
         'window-bar'
         'main-content'
         'player';
-    /* Grow the player row by the home-indicator inset so the bar's controls
-       are not sitting underneath it on a gesture-nav iPhone. */
+    /* The window-bar row is 0 on web (WindowBar renders null off Electron), so
+       main content started at y=0 and every page header sat under the Dynamic
+       Island. Reserve the top inset as that row, and grow the player row by the
+       home-indicator inset. */
     grid-template-rows: 0 calc(100vh - 90px) 90px;
     grid-template-rows:
-        0
-        calc(100dvh - 90px - env(safe-area-inset-bottom))
+        env(safe-area-inset-top)
+        calc(100dvh - 90px - env(safe-area-inset-top) - env(safe-area-inset-bottom))
         calc(90px + env(safe-area-inset-bottom));
     grid-template-columns: 1fr;
     gap: 0;
@@ -29,8 +31,11 @@
 
 .drawer-button {
     position: absolute;
-    bottom: calc(90px + 0.75rem);
-    left: 0.75rem;
+
+    /* The player row is 90px + the bottom inset; a bare 90px left this FAB
+       sitting on top of the player bar and stealing taps from the artwork. */
+    bottom: calc(90px + env(safe-area-inset-bottom) + 0.75rem);
+    left: calc(0.75rem + env(safe-area-inset-left));
     z-index: 100;
     background: color-mix(in srgb, var(--theme-colors-background) 90%, transparent);
     border: 1px solid var(--theme-colors-border);

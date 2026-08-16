@@ -135,3 +135,13 @@
         min-height: var(--ai-size-compact-md);
     }
 }
+
+/* Every icon button in the app defaults to size="sm" (36px), and table rows use
+   xs (30px) -- all under Apple's 44pt minimum. Grow the hit area on touch
+   without changing the glyph size. */
+@media (pointer: coarse) {
+    .root {
+        min-width: 44px;
+        min-height: 44px;
+    }
+}

@@ -179,6 +179,7 @@
     justify-content: center;
     width: 100%;
     margin-top: auto;
+    padding-bottom: env(safe-area-inset-bottom);
     border-top: 1px solid var(--theme-colors-border);
 }
 
@@ -206,14 +207,20 @@
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    padding: 1rem;
+
+    /* These overlays are inset:0 above the player, and swipe-to-dismiss is
+       disabled on these two tabs -- so if their close buttons sit under the
+       Dynamic Island there is no way out of the queue or lyrics view at all. */
+    padding: calc(1rem + env(safe-area-inset-top)) calc(1rem + env(safe-area-inset-right)) 1rem
+        calc(1rem + env(safe-area-inset-left));
 }
 
 .queue-content,
 .lyrics-content {
     flex: 1 1 auto;
     min-height: 0;
-    padding: 1rem;
+    padding: 1rem 1rem calc(1rem + env(safe-area-inset-bottom));
     overflow-y: auto;
+    overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
 }
