@@ -45,6 +45,11 @@ jobs:
               run: pnpm install --frozen-lockfile
 
             - name: Build web bundle
+              env:
+                  # Without both of these the runner dies with "Abort trap: 6"
+                  # (V8 heap exhaustion) on the ~25MB index sourcemap.
+                  FEISHIN_SOURCEMAP: 'false'
+                  NODE_OPTIONS: --max-old-space-size=8192
               run: pnpm build:web
 
             - name: Sync web assets into the iOS project

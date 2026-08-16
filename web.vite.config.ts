@@ -47,7 +47,10 @@ export default defineConfig({
                 sourcemapExcludeSources: false,
             },
         },
-        sourcemap: true,
+        // The index sourcemap is ~25MB and blows V8's default heap on
+        // memory-constrained builders. Set FEISHIN_SOURCEMAP=false to skip it
+        // (shipped iOS builds don't need it). Defaults to on, as before.
+        sourcemap: process.env.FEISHIN_SOURCEMAP !== 'false',
     },
     css: {
         modules: {
