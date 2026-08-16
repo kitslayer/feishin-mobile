@@ -171,6 +171,7 @@ const downloadOne = async ({ serverId, song }: QueueEntry) => {
             path,
             savedAt: Date.now(),
             serverId,
+            song,
             songId: song.id,
             usedAt: Date.now(),
         });

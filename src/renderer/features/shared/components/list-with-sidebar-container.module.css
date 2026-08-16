@@ -33,27 +33,15 @@
     }
 }
 
-/* Below the xs container width neither rule above can ever match, so the
-   sidebar stayed display:none -- and the Folders page portals its entire
-   folder tree into it, leaving that page with no navigation at all. On a
-   narrow screen present it as a full-width overlay instead. */
-@container (width < $mantine-breakpoint-xs) {
-    .container[data-sidebar-open='true'] .sidebar-container {
-        position: absolute;
-        inset: 0;
-        z-index: 5;
-        display: block;
-        width: 100%;
-        min-width: 0;
-        max-width: none;
-        background: var(--theme-colors-background);
-        border-right: none;
-    }
+/* KNOWN GAP: below the xs container width neither rule above can match, so the
+   sidebar stays display:none. The Folders page portals its entire folder tree
+   in here, so that page has no navigation on a phone.
 
-    .container[data-sidebar-open='true'] .content-container {
-        visibility: hidden;
-    }
-}
+   Do NOT fix this by turning the sidebar into a full-width overlay keyed on
+   data-sidebar-open: that attribute defaults to true and is shared with the
+   album and genre lists, so the overlay covers their content instead. A real
+   fix needs the Folders page to render its tree somewhere else on narrow
+   screens rather than relying on this container. */
 
 .content-container {
     position: relative;

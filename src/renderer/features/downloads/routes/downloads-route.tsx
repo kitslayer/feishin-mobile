@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { downloadManager } from '/@/renderer/features/downloads/services/download-manager';
@@ -7,33 +7,51 @@ import {
     useDownloadsUsage,
 } from '/@/renderer/features/downloads/store/downloads.store';
 import { formatBytes, isNative } from '/@/renderer/features/downloads/utils/offline-storage';
+import { usePlayer } from '/@/renderer/features/player/context/player-context';
 import { AnimatedPage } from '/@/renderer/features/shared/components/animated-page';
+import { ActionIcon } from '/@/shared/components/action-icon/action-icon';
 import { Button } from '/@/shared/components/button/button';
 import { Divider } from '/@/shared/components/divider/divider';
 import { Group } from '/@/shared/components/group/group';
-import { Icon } from '/@/shared/components/icon/icon';
 import { Progress } from '/@/shared/components/progress/progress';
 import { ScrollArea } from '/@/shared/components/scroll-area/scroll-area';
 import { Stack } from '/@/shared/components/stack/stack';
 import { Text } from '/@/shared/components/text/text';
+import { Song } from '/@/shared/types/domain-types';
+import { Play } from '/@/shared/types/types';
 
 const DownloadsRoute = () => {
     const { t } = useTranslation();
+    const player = usePlayer();
     const catalog = useDownloadsStore((state) => state.catalog);
     const jobs = useDownloadsStore((state) => state.jobs);
     const maxBytes = useDownloadsStore((state) => state.maxBytes);
     const { bytes, count } = useDownloadsUsage();
 
-    const tracks = Object.values(catalog).sort((a, b) => b.savedAt - a.savedAt);
+    const tracks = useMemo(
+        () => Object.values(catalog).sort((a, b) => b.savedAt - a.savedAt),
+        [catalog],
+    );
     const activeJobs = Object.values(jobs);
 
-    const handleRemoveAll = useCallback(() => {
-        void downloadManager.removeAll();
-    }, []);
+    // Queue from the stored song records rather than refetching, so this works
+    // with no network -- which is the entire point of the page.
+    const playAll = useCallback(
+        (startAt?: string) => {
+            const songs = tracks.map((track) => track.song as Song).filter(Boolean);
+            if (!songs.length) return;
 
-    const handleRetry = useCallback(() => {
-        void downloadManager.retryFailed();
-    }, []);
+            const ordered = startAt
+                ? [
+                      ...songs.slice(songs.findIndex((song) => song.id === startAt)),
+                      ...songs.slice(0, songs.findIndex((song) => song.id === startAt)),
+                  ]
+                : songs;
+
+            player.addToQueueByData(ordered, Play.NOW);
+        },
+        [player, tracks],
+    );
 
     return (
         <AnimatedPage>
@@ -49,18 +67,17 @@ const DownloadsRoute = () => {
                         </Text>
                     </Group>
 
-                    {!isNative() && (
-                        <Text isMuted size="sm">
-                            {t('page.downloads.nativeOnly')}
-                        </Text>
-                    )}
+                    {!isNative() && <Text isMuted size="sm">{t('page.downloads.nativeOnly')}</Text>}
 
                     {activeJobs.length > 0 && (
                         <Stack gap="xs">
                             <Group justify="space-between">
                                 <Text fw={600}>{t('page.downloads.inProgress')}</Text>
                                 {activeJobs.some((job) => job.status === 'error') && (
-                                    <Button onClick={handleRetry} size="compact-sm">
+                                    <Button
+                                        onClick={() => void downloadManager.retryFailed()}
+                                        size="compact-sm"
+                                    >
                                         {t('common.retry', { postProcess: 'titleCase' })}
                                     </Button>
                                 )}
@@ -79,9 +96,7 @@ const DownloadsRoute = () => {
                                     </Group>
                                     <Progress
                                         size="xs"
-                                        value={
-                                            job.status === 'error' ? 100 : job.progress * 100
-                                        }
+                                        value={job.status === 'error' ? 100 : job.progress * 100}
                                     />
                                 </Stack>
                             ))}
@@ -93,38 +108,53 @@ const DownloadsRoute = () => {
                         <Text isMuted>{t('page.downloads.empty')}</Text>
                     ) : (
                         <Stack gap="xs">
+                            <Button onClick={() => playAll()}>
+                                {t('player.play', { postProcess: 'titleCase' })}
+                            </Button>
+                            <Divider />
                             {tracks.map((track) => (
                                 <Group
                                     justify="space-between"
                                     key={`${track.serverId}:${track.songId}`}
+                                    wrap="nowrap"
                                 >
-                                    <Group gap="sm">
-                                        <Icon icon="check" />
+                                    <Stack gap={0} style={{ minWidth: 0 }}>
                                         <Text lineClamp={1} size="sm">
-                                            {track.songId}
+                                            {track.song?.name ?? track.songId}
                                         </Text>
-                                    </Group>
-                                    <Group gap="sm">
+                                        <Text isMuted lineClamp={1} size="xs">
+                                            {[track.song?.artistName, track.song?.album]
+                                                .filter(Boolean)
+                                                .join(' — ')}
+                                        </Text>
+                                    </Stack>
+                                    <Group gap="xs" wrap="nowrap">
                                         <Text isMuted size="xs">
                                             {formatBytes(track.bytes)}
                                         </Text>
-                                        <Button
+                                        <ActionIcon
+                                            icon="mediaPlay"
+                                            onClick={() => playAll(track.songId)}
+                                            variant="subtle"
+                                        />
+                                        <ActionIcon
+                                            icon="delete"
                                             onClick={() =>
                                                 void downloadManager.remove(
                                                     track.serverId,
                                                     track.songId,
                                                 )
                                             }
-                                            size="compact-sm"
                                             variant="subtle"
-                                        >
-                                            {t('common.remove', { postProcess: 'titleCase' })}
-                                        </Button>
+                                        />
                                     </Group>
                                 </Group>
                             ))}
                             <Divider />
-                            <Button onClick={handleRemoveAll} variant="subtle">
+                            <Button
+                                onClick={() => void downloadManager.removeAll()}
+                                variant="subtle"
+                            >
                                 {t('page.downloads.removeAll')}
                             </Button>
                         </Stack>

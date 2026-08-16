@@ -8,6 +8,8 @@
  * zustand (in memory) and is mirrored to IndexedDB for durability.
  */
 import { del, get, set } from 'idb-keyval';
+
+import { QueueSong, Song } from '/@/shared/types/domain-types';
 import { create } from 'zustand';
 import { devtools, subscribeWithSelector } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
@@ -15,6 +17,12 @@ import { immer } from 'zustand/middleware/immer';
 export interface DownloadedTrack {
     /** Bytes on disk. */
     bytes: number;
+    /**
+     * Enough of the song to browse and play it with no network. Without this
+     * the downloads list can only show opaque ids, and nothing can be queued
+     * while offline because the queue needs real song records.
+     */
+    song: QueueSong | Song;
     /** File extension actually written (may differ from the source container). */
     ext: string;
     /** capacitor://localhost/... URL, ready to hand to the audio element. */
