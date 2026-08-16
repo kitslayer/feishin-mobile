@@ -392,7 +392,12 @@ export const MobileFullscreenPlayer = () => {
     const showFavorites = useShowFavorites();
     const setRating = useSetRating();
 
-    const [isPageHovered, setIsPageHovered] = useState(false);
+    // There is no hover on a touch screen, so this would never flip to true and
+    // every control gated on it stayed in its faint "subtle" variant -- including
+    // the minimize button. Treat touch devices as permanently hovered.
+    const [isPageHovered, setIsPageHovered] = useState(
+        () => typeof window !== 'undefined' && window.matchMedia('(hover: none)').matches,
+    );
 
     const handleToggleFullScreenPlayer = useCallback(() => {
         setFullScreenPlayerStore({ expanded: false });

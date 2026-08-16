@@ -103,5 +103,7 @@
 }
 
 .max-height {
-    max-height: 36rem;
+    /* 36rem is taller than a phone screen once the safe areas are taken out,
+       which pushed long menus off the bottom. Clamp to the viewport. */
+    max-height: min(36rem, 60dvh);
 }

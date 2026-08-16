@@ -91,7 +91,15 @@ function Content(props: ContentProps) {
         <AnimatePresence>
             {open && (
                 <RadixContextMenu.Portal forceMount>
-                    <RadixContextMenu.Content asChild className={styles.content}>
+                    {/* Radix avoids collisions by default but pads by 0, so on a
+                        phone the menu clamps flush to the edge and ends up under
+                        the rounded corner / home indicator. Keep it clear of the
+                        bezel, with extra room at the bottom for the indicator. */}
+                    <RadixContextMenu.Content
+                        asChild
+                        className={styles.content}
+                        collisionPadding={{ bottom: 28, left: 12, right: 12, top: 12 }}
+                    >
                         <motion.div
                             animate="show"
                             className={styles.content}
