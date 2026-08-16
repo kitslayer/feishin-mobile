@@ -1779,7 +1779,7 @@ const initialState: SettingsState = {
             itemsPerPage: 100,
             pagination: ListPaginationType.INFINITE,
             table: {
-                autoFitColumns: false,
+                autoFitColumns: true,
                 columns: GENRE_TABLE_COLUMNS.map((column) => ({
                     align: column.align,
                     autoSize: column.autoSize,

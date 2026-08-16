@@ -252,11 +252,22 @@ const getPositionStyles = (
 
     const gap = 8;
 
+    // The group is ~136px wide and centred on the trigger. The list header's
+    // play button sits ~36px from the left edge, which put "Play next" fully
+    // off-screen. Keep the centre far enough in that the group stays visible.
+    const halfGroupWidth = 76;
+    const edge = 12;
+    const clampCenterX = (x: number) =>
+        Math.min(
+            Math.max(x, halfGroupWidth + edge),
+            Math.max(halfGroupWidth + edge, window.innerWidth - halfGroupWidth - edge),
+        );
+
     switch (position) {
         case 'bottom':
             return {
                 height: '64px',
-                left: triggerRect.left + triggerRect.width / 2,
+                left: clampCenterX(triggerRect.left + triggerRect.width / 2),
                 position: 'fixed' as const,
                 top: triggerRect.bottom + gap,
                 transform: 'translateX(-50%)',
@@ -283,7 +294,7 @@ const getPositionStyles = (
         case 'top':
             return {
                 height: '64px',
-                left: triggerRect.left + triggerRect.width / 2,
+                left: clampCenterX(triggerRect.left + triggerRect.width / 2),
                 position: 'fixed' as const,
                 top: triggerRect.top - gap,
                 transform: 'translate(-50%, -100%)',

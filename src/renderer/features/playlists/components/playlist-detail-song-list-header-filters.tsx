@@ -86,7 +86,10 @@ const PlaylistSongListFiltersModal = () => {
                     content: {
                         height: '100%',
                         maxHeight: '640px',
-                        maxWidth: 'var(--theme-content-max-width)',
+                        // 1800px overrides Mantine's max-width:100%, so a size="lg"
+                        // (620px) modal rendered wider than the phone and its pin
+                        // and Reset buttons fell off both edges.
+                        maxWidth: 'min(var(--theme-content-max-width), 100%)',
                         width: '100%',
                     },
                 }}

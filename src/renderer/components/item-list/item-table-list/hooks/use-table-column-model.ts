@@ -3,6 +3,9 @@ import { useMemo } from 'react';
 import { parseTableColumns } from '/@/renderer/components/item-list/helpers/parse-table-columns';
 import { ItemTableListColumnConfig } from '/@/renderer/components/item-list/types';
 
+/** Narrowest a column may be squeezed to by autofit. */
+const MIN_AUTOFIT_COLUMN_WIDTH = 56;
+
 export const useTableColumnModel = ({
     autoFitColumns,
     centerContainerWidth,
@@ -44,11 +47,16 @@ export const useTableColumnModel = ({
             }
 
             const scaleFactor = availableForUnpinned / unpinnedReferenceWidth;
+            // The default song table declares 1320px of columns. Scaling that
+            // into a 440px phone with no floor produced a 33px duration cell
+            // (too narrow for "3:41") and a 20px favourite cell holding a 30px
+            // button. Keep every column at least legible; the table scrolls
+            // horizontally rather than crushing.
             const scaledWidths = baseWidths.map((width, idx) => {
                 if (parsedColumns[idx].pinned !== null) {
                     return Math.round(width);
                 }
-                return Math.round(width * scaleFactor);
+                return Math.max(MIN_AUTOFIT_COLUMN_WIDTH, Math.round(width * scaleFactor));
             });
 
             // Adjust for rounding errors on unpinned columns only

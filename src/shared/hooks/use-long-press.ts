@@ -28,6 +28,13 @@ export const useLongPress = <T extends HTMLElement = HTMLElement>({
     const targetRef = useRef<EventTarget | null>(null);
     const longPressTriggeredRef = useRef(false);
     const eventRef = useRef<null | React.MouseEvent<T> | React.TouchEvent<T>>(null);
+    // WebKit dispatches compatibility mouse events after a touch sequence, and
+    // consumers wire onClick to BOTH onTouchEnd and onMouseUp -- so every tap
+    // fired onClick twice (two queue replacements, two API calls). Touch
+    // handlers can't preventDefault here without killing scrolling, so record
+    // the touch and ignore the synthetic mouse events that follow it.
+    const lastTouchAtRef = useRef(0);
+    const GHOST_MOUSE_WINDOW_MS = 700;
 
     const start = useCallback(
         (event: React.MouseEvent<T> | React.TouchEvent<T>) => {
@@ -59,6 +66,9 @@ export const useLongPress = <T extends HTMLElement = HTMLElement>({
             if (event.button !== 0) {
                 return;
             }
+            if (Date.now() - lastTouchAtRef.current < GHOST_MOUSE_WINDOW_MS) {
+                return;
+            }
             event.preventDefault();
             start(event as React.MouseEvent<T>);
         },
@@ -66,6 +76,9 @@ export const useLongPress = <T extends HTMLElement = HTMLElement>({
     );
 
     const handleMouseUp = useCallback(() => {
+        if (Date.now() - lastTouchAtRef.current < GHOST_MOUSE_WINDOW_MS) {
+            return;
+        }
         const event = eventRef.current;
         clear();
         if (!longPressTriggeredRef.current && onClick && event) {
@@ -86,12 +99,14 @@ export const useLongPress = <T extends HTMLElement = HTMLElement>({
 
     const handleTouchStart = useCallback(
         (event: React.TouchEvent) => {
+            lastTouchAtRef.current = Date.now();
             start(event as React.TouchEvent<T>);
         },
         [start],
     );
 
     const handleTouchEnd = useCallback(() => {
+        lastTouchAtRef.current = Date.now();
         const event = eventRef.current;
         clear();
         if (!longPressTriggeredRef.current && onClick && event) {
