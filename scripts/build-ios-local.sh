@@ -41,8 +41,9 @@ mac "cd ~/${MAC_REPO}/ios/App && xcodebuild \
     -project App.xcodeproj -scheme App -configuration Release \
     -sdk iphoneos -destination 'generic/platform=iOS' \
     -archivePath \$HOME/App.xcarchive archive \
-    CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO \
-    CODE_SIGN_IDENTITY='' DEVELOPMENT_TEAM='' \
+    CODE_SIGNING_ALLOWED=YES AD_HOC_CODE_SIGNING_ALLOWED=YES \
+    CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY='-' \
+    CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM='' \
     | tail -5"
 
 echo "==> [4/4] packaging .ipa and pulling it back"
