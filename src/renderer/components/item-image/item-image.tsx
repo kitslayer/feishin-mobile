@@ -13,6 +13,7 @@ import {
 } from '/@/renderer/store';
 import { BaseImage, ImageProps } from '/@/shared/components/image/image';
 import { ExplicitStatus, ImageRequest, LibraryItem } from '/@/shared/types/domain-types';
+import { getDownloadedArt } from '/@/renderer/features/downloads/store/downloads.store';
 
 const getUnloaderIcon = (itemType: LibraryItem) => {
     switch (itemType) {
@@ -96,6 +97,15 @@ export const useItemImageUrl = (args: UseItemImageUrlProps) => {
     const sizeByType: number | undefined = type ? imageRes[type] : undefined;
 
     return useMemo(() => {
+        const targetServerId = args.serverId || serverId;
+
+        // Prefer art cached alongside a downloaded track so covers still
+        // render with no network.
+        const localArt = getDownloadedArt(targetServerId, id);
+        if (localArt) {
+            return localArt;
+        }
+
         if (imageUrl) {
             return imageUrl;
         }
@@ -104,7 +114,6 @@ export const useItemImageUrl = (args: UseItemImageUrlProps) => {
             return undefined;
         }
 
-        const targetServerId = args.serverId || serverId;
         let baseUrl: string | undefined;
 
         if (useRemoteUrl) {
@@ -130,6 +139,13 @@ export const useItemImageRequest = (args: UseItemImageUrlProps) => {
     const sizeByType: number | undefined = type ? imageRes[type] : undefined;
 
     return useMemo(() => {
+        const targetServerId = args.serverId || serverId;
+
+        const localArt = getDownloadedArt(targetServerId, id);
+        if (localArt) {
+            return { cacheKey: localArt, url: localArt } satisfies ImageRequest;
+        }
+
         if (imageUrl) {
             return {
                 cacheKey: imageUrl,
@@ -141,7 +157,6 @@ export const useItemImageRequest = (args: UseItemImageUrlProps) => {
             return undefined;
         }
 
-        const targetServerId = args.serverId || serverId;
         let baseUrl: string | undefined;
 
         if (useRemoteUrl) {
@@ -200,6 +215,13 @@ export function getItemImageUrl(args: UseItemImageUrlProps) {
     const authStore = useAuthStore.getState();
     const currentServerId = authStore.currentServer?.id;
     const serverId = (args.serverId || currentServerId) as string;
+
+    // Cached cover art wins. This is also what puts artwork on the lock screen
+    // offline, since MediaSession resolves its image through this same helper.
+    const localArt = getDownloadedArt(serverId, id);
+    if (localArt) {
+        return localArt;
+    }
 
     const imageRes = useSettingsStore.getState().general.imageRes;
     const sizeByType: number | undefined = type ? imageRes[type] : undefined;

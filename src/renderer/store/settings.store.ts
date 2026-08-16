@@ -1199,6 +1199,12 @@ export const sidebarItems: SidebarItemType[] = [
         route: AppRoute.RADIO,
     },
     {
+        disabled: false,
+        id: 'Downloads',
+        label: i18n.t('page.sidebar.downloads'),
+        route: AppRoute.DOWNLOADS,
+    },
+    {
         disabled: true,
         id: 'Settings',
         label: i18n.t('page.sidebar.settings'),

@@ -42,6 +42,8 @@ export interface DownloadJob {
 }
 
 interface DownloadsState {
+    /** key -> local art URL. Keyed `${serverId}:${imageId}`. */
+    art: Record<string, string>;
     /** key -> track. Keyed `${serverId}:${songId}`. */
     catalog: Record<string, DownloadedTrack>;
     hydrated: boolean;
@@ -53,6 +55,7 @@ interface DownloadsState {
 }
 
 const CATALOG_IDB_KEY = 'feishin-offline-catalog';
+const ART_IDB_KEY = 'feishin-offline-art';
 const DEFAULT_MAX_BYTES = 8 * 1024 * 1024 * 1024;
 
 export const trackKey = (serverId: string, songId: string) => `${serverId}:${songId}`;
@@ -61,6 +64,7 @@ export const useDownloadsStore = create<DownloadsState>()(
     devtools(
         subscribeWithSelector(
             immer(() => ({
+                art: {},
                 catalog: {},
                 hydrated: false,
                 jobs: {},
@@ -78,7 +82,18 @@ const persistCatalog = () => {
     void set(CATALOG_IDB_KEY, catalog).catch(() => {});
 };
 
+const persistArt = () => {
+    void set(ART_IDB_KEY, useDownloadsStore.getState().art).catch(() => {});
+};
+
 export const downloadsActions = {
+    setArt: (serverId: string, imageId: string, localUrl: string) => {
+        useDownloadsStore.setState((state) => {
+            state.art[trackKey(serverId, imageId)] = localUrl;
+        });
+        persistArt();
+    },
+
     /** Reconcile after a filesystem check finds a file missing. */
     forget: (serverId: string, songId: string) => {
         useDownloadsStore.setState((state) => {
@@ -88,11 +103,13 @@ export const downloadsActions = {
     },
 
     hydrate: async () => {
-        const stored = await get<Record<string, DownloadedTrack>>(CATALOG_IDB_KEY).catch(
-            () => undefined,
-        );
+        const [stored, storedArt] = await Promise.all([
+            get<Record<string, DownloadedTrack>>(CATALOG_IDB_KEY).catch(() => undefined),
+            get<Record<string, string>>(ART_IDB_KEY).catch(() => undefined),
+        ]);
 
         useDownloadsStore.setState((state) => {
+            state.art = storedArt ?? {};
             state.catalog = stored ?? {};
             state.hydrated = true;
         });
@@ -104,10 +121,12 @@ export const downloadsActions = {
 
     reset: () => {
         useDownloadsStore.setState((state) => {
+            state.art = {};
             state.catalog = {};
             state.jobs = {};
         });
         void del(CATALOG_IDB_KEY).catch(() => {});
+        void del(ART_IDB_KEY).catch(() => {});
     },
 
     setJob: (job: DownloadJob) => {
@@ -192,3 +211,12 @@ export const useDownloadsUsage = () =>
             count: tracks.length,
         };
     });
+
+/** Synchronous local cover-art lookup -- safe during render. */
+export const getDownloadedArt = (
+    serverId: null | string | undefined,
+    imageId: null | string | undefined,
+): string | undefined => {
+    if (!serverId || !imageId) return undefined;
+    return useDownloadsStore.getState().art[trackKey(serverId, imageId)];
+};

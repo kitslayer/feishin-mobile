@@ -13,11 +13,13 @@ import { FileTransfer } from '@capacitor/file-transfer';
 
 import {
     downloadsActions,
+    getDownloadedArt,
     getDownloadedTrack,
     trackKey,
     useDownloadsStore,
 } from '/@/renderer/features/downloads/store/downloads.store';
 import {
+    artPathFor,
     audioPathFor,
     deleteFile,
     ensureDir,
@@ -31,7 +33,7 @@ import {
 } from '/@/renderer/features/downloads/utils/offline-storage';
 import { api } from '/@/renderer/api';
 import { logger } from '/@/renderer/utils/logger';
-import { QueueSong, Song } from '/@/shared/types/domain-types';
+import { LibraryItem, QueueSong, Song } from '/@/shared/types/domain-types';
 
 type DownloadableSong = QueueSong | Song;
 
@@ -95,6 +97,41 @@ export const enforceStorageCap = async () => {
     }
 };
 
+/**
+ * Caches the album cover next to the audio. Without this the lock screen shows
+ * nothing offline, since MediaSession artwork resolves through the same image
+ * URL helper as the rest of the UI.
+ */
+const downloadArt = async (song: DownloadableSong, serverId: string) => {
+    const imageId = song.imageUrl ? undefined : (song.imageId ?? undefined);
+    const remoteUrl =
+        song.imageUrl ??
+        (imageId
+            ? api.controller.getImageUrl({
+                  apiClientProps: { serverId },
+                  query: { id: imageId, itemType: LibraryItem.SONG },
+              })
+            : null);
+
+    const cacheId = imageId ?? song.albumId ?? song.id;
+    if (!remoteUrl || !cacheId) return;
+    if (getDownloadedArt(serverId, cacheId)) return;
+
+    try {
+        const path = artPathFor(serverId, cacheId);
+        await ensureDir(path.slice(0, path.lastIndexOf('/')));
+
+        const uri = await getUri(path);
+        if (!uri) return;
+
+        await FileTransfer.downloadFile({ path: uri, url: remoteUrl });
+        downloadsActions.setArt(serverId, cacheId, toPlayableUrl(uri));
+    } catch (error) {
+        // Artwork is a nicety; never fail a track download over it.
+        logger.warn(`[downloads] cover art failed for ${song.name}: ${String(error)}`);
+    }
+};
+
 const downloadOne = async ({ serverId, song }: QueueEntry) => {
     const existing = getDownloadedTrack(serverId, song.id);
     if (existing) return;
@@ -138,6 +175,7 @@ const downloadOne = async ({ serverId, song }: QueueEntry) => {
             usedAt: Date.now(),
         });
 
+        await downloadArt(song, serverId);
         await enforceStorageCap();
     } catch (error) {
         logger.error(`[downloads] failed for ${song.name}: ${String(error)}`);

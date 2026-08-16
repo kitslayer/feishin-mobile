@@ -7,6 +7,10 @@ import { useNavigate } from 'react-router';
 
 import { api } from '/@/renderer/api';
 import { controller } from '/@/renderer/api/controller';
+import {
+    downloadsActions,
+    useDownloadsStore,
+} from '/@/renderer/features/downloads/store/downloads.store';
 import { AppRoute } from '/@/renderer/router/routes';
 import { getServerById, useAuthStoreActions, useCurrentServerId } from '/@/renderer/store';
 import { logger } from '/@/renderer/utils/logger';
@@ -292,6 +296,18 @@ export const useServerAuthenticated = () => {
                     });
 
                     // Don't clear credentials on network failure - preserve them for when network returns
+                    //
+                    // If tracks have been downloaded for offline playback, do
+                    // NOT bounce to the no-network page: that is precisely the
+                    // situation those downloads exist for. Treat the stored
+                    // credential as valid and let the app run against the local
+                    // catalog instead.
+                    if (Object.keys(useDownloadsStore.getState().catalog).length > 0) {
+                        downloadsActions.setOffline(true);
+                        setReady(AuthState.VALID);
+                        return;
+                    }
+
                     setReady(AuthState.INVALID);
                     navigateRef.current(AppRoute.NO_NETWORK, { replace: true });
                     return;

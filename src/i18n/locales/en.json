@@ -723,7 +723,8 @@
             "search": "Search",
             "settings": "Settings",
             "shared": "Shared Playlists",
-            "tracks": "Tracks"
+            "tracks": "Tracks",
+            "downloads": "downloads"
         },
         "trackList": {
             "artistTracks": "Tracks by {{artist}}",
