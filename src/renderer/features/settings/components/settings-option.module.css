@@ -7,3 +7,18 @@
     margin-left: var(--theme-spacing-md);
     border-left: 2px solid var(--theme-colors-surface);
 }
+
+/* Settings rows are Group wrap="nowrap" with a 50%-width label and controls up
+   to 240px wide -- that overflows a 408px content area. Stack them instead. */
+@media (width < 768px) {
+    .row,
+    .row-indented {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .row > *,
+    .row-indented > * {
+        max-width: 100% !important;
+    }
+}

@@ -576,3 +576,12 @@
     min-width: 0;
     height: 1rem;
 }
+
+/* The 240px image track leaves the entire track table 152px on a phone. Stack
+   instead of side-by-side below the layout breakpoint. */
+@media (width < 768px) {
+    .detail-list-header,
+    .row {
+        grid-template-columns: 1fr;
+    }
+}

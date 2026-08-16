@@ -64,3 +64,12 @@
         (100% - (var(--items-per-row) - 1) * var(--theme-spacing-md)) / var(--items-per-row)
     );
 }
+
+/* 2rem side padding costs 64px of a 440px screen -- 15% of the width, feeding
+   the already-tight track table. */
+@media (width < 768px) {
+    .detail-container {
+        padding-right: 1rem;
+        padding-left: 1rem;
+    }
+}

@@ -123,3 +123,12 @@
         max-height: calc(100vh - 90px - var(--theme-spacing-lg) - 4rem);
     }
 }
+
+/* 2rem side padding costs 64px of a 440px screen -- 15% of the width, feeding
+   the already-tight track table. */
+@media (width < 768px) {
+    .detail-container {
+        padding-right: 1rem;
+        padding-left: 1rem;
+    }
+}

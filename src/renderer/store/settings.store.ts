@@ -2,7 +2,7 @@ import isElectron from 'is-electron';
 import cloneDeep from 'lodash/cloneDeep';
 import mergeWith from 'lodash/mergeWith';
 import { nanoid } from 'nanoid';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { generatePath } from 'react-router';
 import { z } from 'zod';
 import { devtools, persist, subscribeWithSelector } from 'zustand/middleware';
@@ -2961,11 +2961,70 @@ export const useSettingsForExport = (): SettingsState & { version: number } =>
 export const migrateSettings = (settings: SettingsState, settingsVersion: number): SettingsState =>
     useSettingsStore.persist.getOptions().migrate!(settings, settingsVersion) as SettingsState;
 
-export const useListSettings = (type: ItemListKey) =>
-    useSettingsStore(
+/**
+ * Columns worth keeping on a phone. The default song table declares 1320px of
+ * columns; autofit crushes that into 440px, leaving a ~100px title and a
+ * duration cell too narrow for "3:41". Album/genre/year are the first things a
+ * phone should drop.
+ */
+/** Matches the layout breakpoint used by useIsMobile. */
+const useIsNarrowViewport = () => {
+    const [isNarrow, setIsNarrow] = useState(
+        () => typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches,
+    );
+
+    useEffect(() => {
+        const query = window.matchMedia('(max-width: 768px)');
+        const apply = () => setIsNarrow(query.matches);
+        apply();
+        query.addEventListener('change', apply);
+        return () => query.removeEventListener('change', apply);
+    }, []);
+
+    return isNarrow;
+};
+
+const MOBILE_TABLE_COLUMNS = new Set<string>([
+    TableColumn.DURATION,
+    TableColumn.IMAGE,
+    TableColumn.SONG_COUNT,
+    TableColumn.TITLE,
+    TableColumn.TITLE_COMBINED,
+    TableColumn.USER_FAVORITE,
+]);
+
+export const useListSettings = (type: ItemListKey) => {
+    const settings = useSettingsStore(
         (state) => state.lists[type as keyof typeof state.lists],
         shallow,
     ) as ItemListSettings;
+
+    const isNarrow = useIsNarrowViewport();
+
+    // Memoised: this returns a new object, and the table components take
+    // `columns` as a prop, so recreating it every render would churn them.
+    return useMemo(() => {
+        if (!isNarrow || !settings?.table?.columns?.length) {
+            return settings;
+        }
+
+        // Disable rather than remove, so the user's own column configuration
+        // survives and reappears untouched on a desktop-width screen.
+        const columns = settings.table.columns.map((column) =>
+            column.isEnabled && !MOBILE_TABLE_COLUMNS.has(column.id)
+                ? { ...column, isEnabled: false }
+                : column,
+        );
+
+        // Never hand back an empty table -- if a list has no "essential"
+        // columns, leave it exactly as configured.
+        if (!columns.some((column) => column.isEnabled)) {
+            return settings;
+        }
+
+        return { ...settings, table: { ...settings.table, columns } };
+    }, [isNarrow, settings]);
+};
 
 export const usePrimaryColor = () => useSettingsStore((store) => store.general.accent, shallow);
 
