@@ -1,0 +1,85 @@
+name: Build iOS app
+
+# Builds an UNSIGNED .ipa on a GitHub-hosted macOS runner.
+#
+# Why unsigned: the phone is on iOS 27, and Xcode can only deploy/debug to a
+# device whose iOS version it has DeviceSupport for. Sideloaders (SideStore /
+# AltStore) install the .ipa directly and re-sign it on-device with a free
+# Apple ID, which sidesteps that entirely. The app itself is forward
+# compatible -- deployment target is iOS 15.0, so an iOS 26 SDK build runs
+# fine on iOS 27.
+#
+# Note: macOS runner minutes bill at a 10x multiplier on private repos.
+
+on:
+    workflow_dispatch:
+    push:
+        branches: [development]
+        paths:
+            - 'src/**'
+            - 'ios/**'
+            - 'capacitor.config.ts'
+            - 'package.json'
+            - '.github/workflows/ios.yml'
+
+jobs:
+    build:
+        runs-on: macos-26
+        timeout-minutes: 45
+
+        steps:
+            - uses: actions/checkout@v5
+
+            - uses: actions/setup-node@v5
+              with:
+                  node-version: 22
+
+            - name: Install pnpm
+              run: npm i -g pnpm@11.5.2
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Build web bundle
+              run: pnpm build:web
+
+            - name: Sync web assets into the iOS project
+              run: pnpm exec cap sync ios
+
+            - name: Show toolchain
+              run: |
+                  xcodebuild -version
+                  xcodebuild -showsdks | grep -i ios || true
+
+            - name: Archive (unsigned)
+              working-directory: ios/App
+              run: |
+                  xcodebuild \
+                    -project App.xcodeproj \
+                    -scheme App \
+                    -configuration Release \
+                    -sdk iphoneos \
+                    -archivePath "$RUNNER_TEMP/App.xcarchive" \
+                    -destination 'generic/platform=iOS' \
+                    archive \
+                    CODE_SIGNING_ALLOWED=NO \
+                    CODE_SIGNING_REQUIRED=NO \
+                    CODE_SIGN_IDENTITY="" \
+                    CODE_SIGN_ENTITLEMENTS="" \
+                    DEVELOPMENT_TEAM=""
+
+            - name: Package .ipa
+              run: |
+                  APP="$RUNNER_TEMP/App.xcarchive/Products/Applications/App.app"
+                  test -d "$APP" || { echo "no .app produced"; exit 1; }
+                  mkdir -p "$RUNNER_TEMP/Payload"
+                  cp -R "$APP" "$RUNNER_TEMP/Payload/"
+                  cd "$RUNNER_TEMP"
+                  zip -qry Feishin-unsigned.ipa Payload
+                  ls -lh Feishin-unsigned.ipa
+
+            - uses: actions/upload-artifact@v4
+              with:
+                  name: Feishin-unsigned-ipa
+                  path: ${{ runner.temp }}/Feishin-unsigned.ipa
+                  if-no-files-found: error
