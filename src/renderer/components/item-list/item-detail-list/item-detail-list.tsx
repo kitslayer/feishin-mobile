@@ -187,7 +187,11 @@ const TrackRow = memo(
             itemType: LibraryItem.SONG,
             playerContext,
         });
-        const [isRowHovered, setIsRowHovered] = useState(false);
+        // Touch has no hover, so this never became true: row controls stayed
+        // hidden and the rating stayed readOnly. Treat touch as hovered.
+        const [isRowHovered, setIsRowHovered] = useState(
+            () => typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches,
+        );
         const isSelected = useItemSelectionState(internalState, song.id);
 
         const handleDoubleClick = useCallback(
@@ -427,8 +431,16 @@ const MetadataSection = memo(
         const { t } = useTranslation();
         const showRatings = useShowRatings();
         const showFavorites = useShowFavorites();
-        const [isImageHovered, setIsImageHovered] = useState(false);
-        const [isMetadataHovered, setIsMetadataHovered] = useState(false);
+        // Touch has no hover, so this never became true: row controls stayed
+        // hidden and the rating stayed readOnly. Treat touch as hovered.
+        const [isImageHovered, setIsImageHovered] = useState(
+            () => typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches,
+        );
+        // Touch has no hover, so this never became true: row controls stayed
+        // hidden and the rating stayed readOnly. Treat touch as hovered.
+        const [isMetadataHovered, setIsMetadataHovered] = useState(
+            () => typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches,
+        );
 
         const getId = useCallback(() => {
             const draggedItems = getDraggedItems(item, internalState, false);

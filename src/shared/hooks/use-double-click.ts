@@ -30,6 +30,25 @@ export const useDoubleClick = ({
 
     const handleClick = useCallback(
         (e: any) => {
+            // On a touch screen a row's primary action should happen on the
+            // first tap. Double-tap-to-play is a mouse idiom, and the single-tap
+            // fallback only selects -- which is close to useless on a phone,
+            // since multi-select needs modifier keys that do not exist there.
+            if (
+                typeof window !== 'undefined' &&
+                window.matchMedia('(pointer: coarse)').matches
+            ) {
+                // Never hijack a tap that landed on a real control, or a tap
+                // would both toggle a favourite and start playback.
+                const target = e?.target as HTMLElement | undefined;
+                if (target?.closest?.('button, a, input, select, textarea, [role="button"]')) {
+                    return;
+                }
+
+                onDoubleClick(e);
+                return;
+            }
+
             clickCountRef.current += 1;
             lastClickEventRef.current = e;
 

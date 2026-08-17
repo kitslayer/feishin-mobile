@@ -1,3 +1,4 @@
+import { Capacitor } from '@capacitor/core';
 import isElectron from 'is-electron';
 import cloneDeep from 'lodash/cloneDeep';
 import mergeWith from 'lodash/mergeWith';
@@ -2967,7 +2968,12 @@ export const migrateSettings = (settings: SettingsState, settingsVersion: number
  * duration cell too narrow for "3:41". Album/genre/year are the first things a
  * phone should drop.
  */
-/** Matches the layout breakpoint used by useIsMobile. */
+/**
+ * Matches useIsMobile: the installed iOS app always uses the phone column set,
+ * so rotating to landscape does not restore 1320px of desktop columns.
+ */
+const isNativePlatform = () => Capacitor.isNativePlatform();
+
 const useIsNarrowViewport = () => {
     const [isNarrow, setIsNarrow] = useState(
         () => typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches,
@@ -2981,7 +2987,7 @@ const useIsNarrowViewport = () => {
         return () => query.removeEventListener('change', apply);
     }, []);
 
-    return isNarrow;
+    return isNativePlatform() || isNarrow;
 };
 
 const MOBILE_TABLE_COLUMNS = new Set<string>([

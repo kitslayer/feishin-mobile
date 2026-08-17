@@ -109,6 +109,45 @@ check('logged in / past server form', !(await page.locator('input[type=password]
 const blocked = await dismissModals();
 check('no modal blocking the UI', blocked === 0, `dialogs=${blocked}`);
 
+// ---- single tap must trigger a row's primary action, not need a double ----
+// Asserted via a network request rather than the queue: the player store only
+// persists once playback actually starts, which headless cannot do.
+log('\n== single-tap to play ==');
+// Use the songs library: on an album page playback may already be running from
+// the Play button above, and re-tapping the same track reuses the resolved URL
+// so no new request would appear.
+await page.goto(URL + '/#/library/songs', { waitUntil: 'domcontentloaded' });
+await page.waitForTimeout(6000);
+// Every CELL carries the data-row class, so an index into all of them lands on
+// a duration or favourite cell. Filter to cells that actually contain a track
+// title so the tap lands on a row's primary target.
+const rows = page
+    .locator('[class*="item-table-list-column-module"][class*="data-row"]')
+    .filter({ hasText: /\S/ });
+const rowCount = await rows.count().catch(() => 0);
+if (rowCount > 0) {
+    let streamRequested = false;
+    const watch = (req) => {
+        if (/stream\.view|getTranscode|download\.view/.test(req.url())) streamRequested = true;
+    };
+    page.on('request', watch);
+
+    log(`  url=${page.url().split('#')[1]} rows=${rowCount}`);
+    const rowText = await rows.nth(0).innerText().catch(() => '?');
+    log(`  tapping row: ${JSON.stringify(rowText.slice(0, 40))}`);
+    await rows.nth(0).tap({ timeout: 5000 }).catch((e) => log('  tap err', e.message.slice(0, 60)));
+    await page.waitForTimeout(4000);
+    page.off('request', watch);
+
+    check(
+        'ONE tap on a track row starts playback (no double-tap needed)',
+        streamRequested,
+        streamRequested ? 'stream requested' : 'no stream request seen',
+    );
+} else {
+    log(`  INFO  no track rows found to tap (rows=${rowCount})`);
+}
+
 // ---- navigate to an album and actually start playback ----
 log('\n== start playback ==');
 await page.goto(URL + '/#/library/albums', { waitUntil: 'domcontentloaded' });

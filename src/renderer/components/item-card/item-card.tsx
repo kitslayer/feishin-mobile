@@ -217,7 +217,17 @@ const ItemCardStandardImageArea = memo(function ItemCardStandardImageArea({
 }) {
     const [showControls, setShowControls] = useState(false);
 
+    // No hover handling on touch. The overlay is revealed by onMouseEnter, and
+    // iOS fires a synthetic mouseover on the first tap -- which changes the
+    // content under the finger, so WebKit suppresses that tap's click and the
+    // card needed two taps. Leaving the overlay permanently visible instead
+    // just moves the problem: it then covers the card and swallows the tap.
+    // On touch the card is a plain link; long-press gives the play options.
+    const isCoarsePointer =
+        typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches;
+
     const handleMouseEnter = () => {
+        if (isCoarsePointer) return;
         if (withControls) {
             setShowControls(true);
         }
@@ -353,7 +363,11 @@ const CompactItemCardImageArea = memo(function CompactItemCardImageArea({
 }) {
     const [showControls, setShowControls] = useState(false);
 
+    const isCoarsePointer =
+        typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches;
+
     const handleMouseEnter = () => {
+        if (isCoarsePointer) return;
         if (withControls) {
             setShowControls(true);
         }
