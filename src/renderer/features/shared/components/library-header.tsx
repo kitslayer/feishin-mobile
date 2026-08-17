@@ -8,6 +8,8 @@ import { Link } from 'react-router';
 
 import styles from './library-header.module.css';
 
+import { useCollapsingHeader } from '/@/renderer/features/shared/hooks/use-collapsing-header';
+
 import { getItemImageUrl, ItemImage } from '/@/renderer/components/item-image/item-image';
 import { useIsPlayerFetching } from '/@/renderer/features/player/context/player-context';
 import {
@@ -71,6 +73,7 @@ export const LibraryHeader = forwardRef(
         ref: Ref<HTMLDivElement>,
     ) => {
         const { t } = useTranslation();
+        const isCollapsed = useCollapsingHeader();
         const { blurExplicitImages } = useGeneralSettings();
 
         const itemTypeString = (): string => {
@@ -158,6 +161,10 @@ export const LibraryHeader = forwardRef(
                     styles.libraryHeader,
                     containerClassName,
                     compact && styles.compact,
+                    // Collapses on a phone once the track list is scrolled --
+                    // the header sits outside that scroller, so without this it
+                    // stays put and leaves about four rows visible.
+                    isCollapsed && styles.collapsed,
                 )}
                 ref={ref}
             >

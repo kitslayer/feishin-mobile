@@ -19,6 +19,9 @@ Target: iOS only. Anything desktop-shaped is a bug.
 - [x] Whole now-playing bar opens the full player, not just the artwork
 - [x] Compact horizontal detail header on phones (was ~400px of a 956px screen,
       leaving about four rows visible)
+- [x] Header collapses on scroll (295px -> 52px), so a detail page shows 12 rows
+      instead of 3
+- [x] Back control + left-edge swipe-back on every detail page
 - [x] Mobile layout is unconditional on device — a 768px query meant landscape
       (956px) threw the desktop layout back
 - [x] Safe areas: page headers, queue/lyrics tabs, drawer, modals, toasts, player bar
@@ -27,10 +30,7 @@ Target: iOS only. Anything desktop-shaped is a bug.
 
 ## Next
 
-- [ ] **Back navigation** — detail pages have no back affordance and no swipe-back
-- [ ] **Album detail is off-centre**
 - [ ] **More drawer is unpolished** — rebuild as a proper iOS settings-style list
-- [ ] **Header collapse on scroll** — compact now, but should shrink as you scroll
 - [ ] Home screen is still desktop shelves
 - [ ] List toolbar (Name + five icons) is cramped
 - [ ] Now-playing bar looks empty when nothing is playing

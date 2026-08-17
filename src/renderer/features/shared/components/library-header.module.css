@@ -246,4 +246,33 @@
         line-height: 1.15 !important;
         text-align: left;
     }
+
+    /* Scrolled state: shrink to a compact bar so the track list gets the
+       screen. Grid rows animate poorly, so drive height and opacity. */
+    .library-header.collapsed {
+        grid-template-columns: 44px minmax(0, 1fr);
+        gap: var(--theme-spacing-sm);
+        padding-top: var(--theme-spacing-xs);
+        padding-bottom: var(--theme-spacing-xs);
+    }
+
+    .library-header.collapsed .image,
+    .library-header.collapsed :global(.item-image-placeholder) {
+        width: 44px !important;
+        height: 44px;
+    }
+
+    .library-header.collapsed .title {
+        font-size: 1.05rem !important;
+    }
+
+    /* Everything below the title -- metadata pills, ratings, action row -- is
+       what actually eats the screen. */
+    .library-header.collapsed .metadata-section > :not(.title):not(.item-type) {
+        display: none;
+    }
+
+    .library-header.collapsed .item-type {
+        display: none;
+    }
 }
