@@ -123,6 +123,7 @@ const AppEffects = () => (
         <LanguageEffect />
         <NativeMenuSyncEffect />
         <FullscreenToggleEffect />
+        <NativeZoomLockEffect />
         <InputFocusEffect />
     </>
 );
@@ -269,6 +270,41 @@ const NativeMenuSyncEffect = () => {
 
 const FullscreenToggleEffect = () => {
     useFullscreenToggle();
+
+    return null;
+};
+
+/**
+ * The installed iOS app is a WKWebView, not a document reader: pinch and
+ * double-tap scale leave the interface stranded at a magnification the app
+ * cannot sensibly restore. The viewport tag handles normal WebKit behavior;
+ * these non-standard gesture events cover iOS fallback paths without touching
+ * one-finger scroll, drag, edge-back, or playback controls.
+ */
+const NativeZoomLockEffect = () => {
+    useEffect(() => {
+        const preventGestureZoom = (event: Event) => event.preventDefault();
+        const preventMultiTouchZoom = (event: TouchEvent) => {
+            if (event.touches.length > 1) {
+                event.preventDefault();
+            }
+        };
+        const options = { passive: false } as const;
+
+        document.addEventListener('gesturestart', preventGestureZoom, options);
+        document.addEventListener('gesturechange', preventGestureZoom, options);
+        document.addEventListener('gestureend', preventGestureZoom, options);
+        document.addEventListener('touchstart', preventMultiTouchZoom, options);
+        document.addEventListener('touchmove', preventMultiTouchZoom, options);
+
+        return () => {
+            document.removeEventListener('gesturestart', preventGestureZoom);
+            document.removeEventListener('gesturechange', preventGestureZoom);
+            document.removeEventListener('gestureend', preventGestureZoom);
+            document.removeEventListener('touchstart', preventMultiTouchZoom);
+            document.removeEventListener('touchmove', preventMultiTouchZoom);
+        };
+    }, []);
 
     return null;
 };

@@ -64,6 +64,13 @@ const env = await page.evaluate(() => ({
 log('  viewport', env.w, 'mobileBreakpoint', env.mobile, 'hover:none', env.hoverNone);
 check('renders mobile layout', env.mobile, `width=${env.w}`);
 
+const viewportMeta = await page.locator('meta[name="viewport"]').getAttribute('content');
+check(
+    'viewport disables user scaling',
+    /maximum-scale=1/.test(viewportMeta || '') && /user-scalable=no/.test(viewportMeta || ''),
+    viewportMeta || 'missing',
+);
+
 // ---- dismiss the changelog modal (it renders over the setup form) ----
 log('\n== startup modal ==');
 const dlg = page.locator('[role="dialog"]').first();
@@ -138,6 +145,31 @@ if (await settingsLink.count()) {
     await page.waitForTimeout(900);
 }
 check('Settings navigation works', page.url().includes('/settings'), page.url().split('#')[1]);
+const settingsScroll = await page
+    .locator('[class*="settings-content-module-scroll-container"]')
+    .evaluate((element) => {
+        const scroller = element;
+        const before = scroller.scrollTop;
+        scroller.scrollTop = before + 120;
+        return {
+            after: scroller.scrollTop,
+            before,
+            clientHeight: scroller.clientHeight,
+            overflowY: getComputedStyle(scroller).overflowY,
+            scrollHeight: scroller.scrollHeight,
+        };
+    })
+    .catch(() => null);
+check(
+    'Settings has a working vertical scroll container',
+    !!settingsScroll &&
+        settingsScroll.overflowY === 'auto' &&
+        (settingsScroll.scrollHeight <= settingsScroll.clientHeight ||
+            settingsScroll.after > settingsScroll.before),
+    settingsScroll
+        ? `${settingsScroll.overflowY} ${settingsScroll.clientHeight}px/${settingsScroll.scrollHeight}px`
+        : 'settings scroll container missing',
+);
 check('drawer closes after navigation', !(await mobileSidebar.isVisible().catch(() => false)));
 
 await page.goto(URL + '/#/', { waitUntil: 'domcontentloaded' });
