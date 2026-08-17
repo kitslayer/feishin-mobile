@@ -725,7 +725,7 @@
             "settings": "Settings",
             "shared": "Shared Playlists",
             "tracks": "Tracks",
-            "downloads": "downloads"
+            "downloads": "Downloads"
         },
         "trackList": {
             "artistTracks": "Tracks by {{artist}}",
@@ -737,7 +737,7 @@
             "inProgress": "Downloading",
             "nativeOnly": "Offline downloads are only available in the installed app, not in a browser.",
             "removeAll": "Remove all downloads",
-            "title": "downloads"
+            "title": "Downloads"
         }
     },
     "player": {

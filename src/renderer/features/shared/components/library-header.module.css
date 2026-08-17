@@ -207,8 +207,14 @@
         transition: gap 180ms ease, padding 180ms ease;
     }
 
+    /* `.compact` sets 250px at specificity (0,3,0), which outranked a plain
+       `.library-header .image` override -- so the playlist header's artwork
+       rendered 250px wide inside a 116px grid column and spilled over the
+       title and action row. Match the specificity on both variants. */
     .library-header .image,
-    .library-header :global(.item-image-placeholder) {
+    .library-header :global(.item-image-placeholder),
+    .library-header.compact .image,
+    .library-header.compact :global(.item-image-placeholder) {
         width: 116px !important;
         height: 116px;
         transition: width 180ms ease, height 180ms ease;
@@ -250,6 +256,26 @@
         display: none;
     }
 
+    /* The row scrolls, but its buttons were still being squeezed and their
+       labels clipped to "Pla" / "Ne" / "Las". Let each keep its natural width. */
+    .library-header-menu > :global([class*='mantine-Group-root']):first-child > * {
+        flex: 0 0 auto;
+    }
+
+    .library-header-menu :global(.mantine-Button-label) {
+        overflow: visible;
+        white-space: nowrap;
+    }
+
+    /* The global back control is absolutely positioned at the top-left of the
+       route, which sat on top of the artwork. Indent past it (44px + gap).
+       `.compact` sets a padding shorthand at higher specificity, so it has to
+       be named explicitly or it resets this to 4px. */
+    .library-header,
+    .library-header.compact {
+        padding-left: calc(52px + env(safe-area-inset-left));
+    }
+
     .title {
         font-size: 1.6rem !important;
         line-height: 1.15 !important;
@@ -267,7 +293,9 @@
     }
 
     .library-header.collapsed .image,
-    .library-header.collapsed :global(.item-image-placeholder) {
+    .library-header.collapsed :global(.item-image-placeholder),
+    .library-header.collapsed.compact .image,
+    .library-header.collapsed.compact :global(.item-image-placeholder) {
         width: 44px !important;
         height: 44px;
     }

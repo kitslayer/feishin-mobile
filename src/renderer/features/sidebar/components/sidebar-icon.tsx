@@ -23,6 +23,8 @@ import {
     RiSettings2Line,
     RiUserVoiceFill,
     RiUserVoiceLine,
+    RiDownloadFill,
+    RiDownloadLine,
 } from 'react-icons/ri';
 import { generatePath, useLocation } from 'react-router';
 
@@ -42,6 +44,9 @@ export const SidebarIcon = ({ active, route, size }: SidebarIconProps) => {
     const isActive = active !== undefined ? active : location.pathname === route;
     const renderIcon = () => {
         switch (route) {
+            case AppRoute.DOWNLOADS:
+                if (isActive) return <RiDownloadFill size={size} />;
+                return <RiDownloadLine size={size} />;
             case AppRoute.HOME:
                 if (isActive) return <RiHome6Fill size={size} />;
                 return <RiHome6Line size={size} />;
