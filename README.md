@@ -1,6 +1,9 @@
 <img src="assets/icons/icon.png" alt="logo" title="feishin" align="right" height="60px" width="60px" />
 
-# Feishin
+# Feishin iOS
+
+> **iOS-only personal fork.** This repository builds and ships Feishin exclusively as a native iPhone app through Capacitor. Desktop, web, Docker, and other platform release paths inherited from upstream are not supported targets for this fork.
+
 
   <p align="center">
     <a href="https://github.com/jeffvli/feishin/blob/main/LICENSE">
