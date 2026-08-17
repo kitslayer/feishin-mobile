@@ -16,6 +16,18 @@
     background: rgb(var(--theme-colors-background-transparent), 80%);
 }
 
+/* Full-screen visualizer used to inherit a desktop-only Escape exit. On iPhone
+   it has no keyboard, and the embedded visualizer's small desktop controls sit
+   under the status area. Keep a 44pt dismissal target clear of the Dynamic Island. */
+.mobile-close {
+    position: absolute;
+    top: calc(env(safe-area-inset-top) + 0.5rem);
+    right: calc(env(safe-area-inset-right) + 0.5rem);
+    z-index: 202;
+    width: 44px;
+    height: 44px;
+}
+
 .visualizer-container {
     position: relative;
     flex: 1;

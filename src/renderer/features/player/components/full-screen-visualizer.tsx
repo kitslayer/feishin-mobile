@@ -1,5 +1,6 @@
 import { motion, Variants } from 'motion/react';
 import { lazy, memo, ReactNode, Suspense, useEffect, useLayoutEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router';
 
 import styles from './full-screen-visualizer.module.css';
@@ -14,6 +15,7 @@ import {
     useSettingsStore,
     useWindowSettings,
 } from '/@/renderer/store/settings.store';
+import { ActionIcon } from '/@/shared/components/action-icon/action-icon';
 import { Platform } from '/@/shared/types/types';
 
 const AudioMotionAnalyzerVisualizer = lazy(() =>
@@ -31,28 +33,16 @@ const ButterchurnVisualizer = lazy(() =>
 const containerVariants: Variants = {
     closed: (custom) => {
         const { isMobile, windowBarStyle } = custom;
-        const height =
-            windowBarStyle === Platform.WINDOWS || windowBarStyle === Platform.MACOS
-                ? 'calc(100vh - 120px)'
-                : 'calc(100vh - 90px)';
+        const height = isMobile
+            ? '100dvh'
+            : windowBarStyle === Platform.WINDOWS || windowBarStyle === Platform.MACOS
+              ? 'calc(100vh - 120px)'
+              : 'calc(100vh - 90px)';
 
-        if (isMobile) {
-            return {
-                height,
-                position: 'absolute',
-                top: '100vh',
-                transition: {
-                    duration: 0.5,
-                    ease: 'easeInOut',
-                },
-                width: '100vw',
-                y: 0,
-            };
-        }
         return {
             height,
             position: 'absolute',
-            top: '100vh',
+            top: isMobile ? '100dvh' : '100vh',
             transition: {
                 duration: 0.5,
                 ease: 'easeInOut',
@@ -63,35 +53,21 @@ const containerVariants: Variants = {
     },
     open: (custom) => {
         const { isMobile, windowBarStyle } = custom;
-        const height =
-            windowBarStyle === Platform.WINDOWS || windowBarStyle === Platform.MACOS
-                ? 'calc(100vh - 120px)'
-                : 'calc(100vh - 90px)';
+        const height = isMobile
+            ? '100dvh'
+            : windowBarStyle === Platform.WINDOWS || windowBarStyle === Platform.MACOS
+              ? 'calc(100vh - 120px)'
+              : 'calc(100vh - 90px)';
         const topOffset =
             windowBarStyle === Platform.WINDOWS || windowBarStyle === Platform.MACOS
                 ? '30px'
                 : '0px';
 
-        if (isMobile) {
-            return {
-                height,
-                left: 0,
-                position: 'absolute',
-                top: topOffset,
-                transition: {
-                    delay: 0.1,
-                    duration: 0.5,
-                    ease: 'easeInOut',
-                },
-                width: '100vw',
-                y: 0,
-            };
-        }
         return {
             height,
             left: 0,
             position: 'absolute',
-            top: 0,
+            top: isMobile ? '0px' : topOffset,
             transition: {
                 delay: 0.1,
                 duration: 0.5,
@@ -130,6 +106,7 @@ const VisualizerContainer = memo(
 VisualizerContainer.displayName = 'VisualizerContainer';
 
 export const FullScreenVisualizer = () => {
+    const { t } = useTranslation();
     const { setStore } = useFullScreenPlayerStoreActions();
     const { windowBarStyle } = useWindowSettings();
     const { webAudio } = usePlaybackSettings();
@@ -169,6 +146,17 @@ export const FullScreenVisualizer = () => {
 
     return (
         <VisualizerContainer isMobile={isMobile} windowBarStyle={windowBarStyle}>
+            {isMobile && (
+                <ActionIcon
+                    aria-label={t('common.close')}
+                    className={styles.mobileClose}
+                    icon="x"
+                    iconProps={{ size: 'lg' }}
+                    onClick={handleCloseVisualizer}
+                    tooltip={{ label: t('common.close') }}
+                    variant="default"
+                />
+            )}
             <div className={styles.visualizerContainer} id={VISUALIZER_FULLSCREEN_TARGET_ID}>
                 {webAudio ? (
                     <Suspense fallback={<></>}>
