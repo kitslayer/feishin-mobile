@@ -3,9 +3,9 @@
     flex-direction: column;
     width: 100%;
     height: 100%;
-    overflow: hidden auto;
     padding: calc(env(safe-area-inset-top) + 0.5rem) calc(env(safe-area-inset-right) + 1rem)
         calc(env(safe-area-inset-bottom) + 1rem) calc(env(safe-area-inset-left) + 1rem);
+    overflow: hidden auto;
     background: var(--theme-colors-background-alternate);
 }
 
@@ -30,8 +30,8 @@
 
 .section-label {
     padding: 0 0.75rem;
-    letter-spacing: 0.03em;
     text-transform: uppercase;
+    letter-spacing: 0.03em;
 }
 
 .group {
@@ -68,4 +68,20 @@
 
 .disclosure {
     color: var(--theme-colors-foreground-muted);
+}
+
+.source-group {
+    overflow: hidden;
+    background: var(--theme-colors-background);
+    border: 1px solid var(--theme-colors-border);
+    border-radius: var(--theme-radius-md);
+}
+
+.source-group :global([class*='button-group']) {
+    min-height: 56px;
+    padding: 0.625rem 0.875rem;
+}
+
+.source-group :global([class*='button-group']):active {
+    background: color-mix(in srgb, var(--theme-colors-primary) 14%, transparent);
 }

@@ -203,12 +203,15 @@
         padding: var(--theme-spacing-md) var(--theme-spacing-md)
             var(--theme-spacing-sm);
         text-align: left;
+        touch-action: pan-y;
+        transition: gap 180ms ease, padding 180ms ease;
     }
 
     .library-header .image,
     .library-header :global(.item-image-placeholder) {
         width: 116px !important;
         height: 116px;
+        transition: width 180ms ease, height 180ms ease;
     }
 
     .top-right {
@@ -228,8 +231,14 @@
 
     /* The action row (Play / Next / Last / Album radio) ran off the right edge
        with no way to reach the last button. Let it scroll sideways. */
-    .metadata-section > :global(.mantine-Group-root) {
-        flex-wrap: nowrap;
+    .library-header-menu {
+        align-items: stretch;
+        min-width: 0;
+    }
+
+    .library-header-menu > :global([class*='mantine-Group-root']):first-child {
+        justify-content: flex-start;
+        width: 100%;
         max-width: 100%;
         overflow-x: auto;
         overscroll-behavior-x: contain;
@@ -237,7 +246,7 @@
         -webkit-overflow-scrolling: touch;
     }
 
-    .metadata-section > :global(.mantine-Group-root)::-webkit-scrollbar {
+    .library-header-menu > :global([class*='mantine-Group-root']):first-child::-webkit-scrollbar {
         display: none;
     }
 
@@ -245,6 +254,7 @@
         font-size: 1.6rem !important;
         line-height: 1.15 !important;
         text-align: left;
+        transition: font-size 180ms ease;
     }
 
     /* Scrolled state: shrink to a compact bar so the track list gets the
@@ -268,11 +278,18 @@
 
     /* Everything below the title -- metadata pills, ratings, action row -- is
        what actually eats the screen. */
-    .library-header.collapsed .metadata-section > :not(.title):not(.item-type) {
-        display: none;
+    .metadata-section > :not(.title, .item-type),
+    .metadata-section > .item-type {
+        max-height: 12rem;
+        overflow: hidden;
+        opacity: 1;
+        transition: max-height 180ms ease, opacity 140ms ease;
     }
 
-    .library-header.collapsed .item-type {
-        display: none;
+    .library-header.collapsed .metadata-section > :not(.title, .item-type),
+    .library-header.collapsed .metadata-section > .item-type {
+        max-height: 0;
+        pointer-events: none;
+        opacity: 0;
     }
 }

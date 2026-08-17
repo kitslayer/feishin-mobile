@@ -5,6 +5,7 @@ import { NavLink } from 'react-router';
 
 import styles from './mobile-sidebar.module.css';
 
+import { ServerSelector } from '/@/renderer/features/sidebar/components/server-selector';
 import { getCollectionTo } from '/@/renderer/features/sidebar/components/sidebar-collection-list';
 import { SidebarIcon } from '/@/renderer/features/sidebar/components/sidebar-icon';
 import { AppRoute } from '/@/renderer/router/routes';
@@ -92,6 +93,14 @@ export const MobileSidebar = () => {
                     {t('common.more', { postProcess: 'titleCase' })}
                 </Text>
             </header>
+            <section className={styles.section}>
+                <Text className={styles.sectionLabel} fw={700} size="xs" variant="secondary">
+                    Library source
+                </Text>
+                <div className={styles.sourceGroup}>
+                    <ServerSelector position="bottom-start" withinPortal />
+                </div>
+            </section>
             <nav className={styles.list}>
                 {libraryItems.length > 0 && (
                     <section className={styles.section}>

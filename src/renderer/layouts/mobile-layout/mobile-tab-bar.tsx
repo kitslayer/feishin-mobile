@@ -7,17 +7,17 @@ import { AppRoute } from '/@/renderer/router/routes';
 import { Icon } from '/@/shared/components/icon/icon';
 import { LibraryItem } from '/@/shared/types/domain-types';
 
+interface MobileTabBarProps {
+    /** Opens the existing drawer, which still holds playlists, radio and settings. */
+    onMore: () => void;
+}
+
 interface Tab {
     icon: 'home' | 'itemAlbum' | 'playlist' | 'search';
     label: string;
     /** Extra route prefixes that should keep this tab highlighted. */
     matches?: string[];
     to: string;
-}
-
-interface MobileTabBarProps {
-    /** Opens the existing drawer, which still holds playlists, radio and settings. */
-    onMore: () => void;
 }
 
 /**
@@ -69,13 +69,11 @@ export const MobileTabBar = ({ onMore }: MobileTabBarProps) => {
                     <span className={styles.label}>{tab.label}</span>
                 </NavLink>
             ))}
-            <button
-                className={styles.tab}
-                onClick={onMore}
-                type="button"
-            >
+            <button className={styles.tab} onClick={onMore} type="button">
                 <Icon icon="menu" size="lg" />
-                <span className={styles.label}>{t('common.more', { postProcess: 'titleCase' })}</span>
+                <span className={styles.label}>
+                    {t('common.more', { postProcess: 'titleCase' })}
+                </span>
             </button>
         </nav>
     );

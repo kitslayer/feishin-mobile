@@ -60,7 +60,7 @@ export function BaseImage({
     enableAnimation = false,
     enableDebounce = false,
     enableViewport = true,
-    fetchPriority = 'low',
+    fetchPriority = 'auto',
     imageContainerProps,
     imageRequest,
     includeLoader = true,

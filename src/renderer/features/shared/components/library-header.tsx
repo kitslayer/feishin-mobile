@@ -2,13 +2,11 @@ import type { KeyboardEvent } from 'react';
 
 import { closeAllModals, openModal } from '@mantine/modals';
 import clsx from 'clsx';
-import { forwardRef, ReactNode, Ref, useCallback } from 'react';
+import { forwardRef, ReactNode, Ref, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 
 import styles from './library-header.module.css';
-
-import { useCollapsingHeader } from '/@/renderer/features/shared/hooks/use-collapsing-header';
 
 import { getItemImageUrl, ItemImage } from '/@/renderer/components/item-image/item-image';
 import { useIsPlayerFetching } from '/@/renderer/features/player/context/player-context';
@@ -18,6 +16,7 @@ import {
     PlayTextButton,
 } from '/@/renderer/features/shared/components/play-button';
 import { LONG_PRESS_PLAY_BEHAVIOR } from '/@/renderer/features/shared/components/play-button-group';
+import { useCollapsingHeader } from '/@/renderer/features/shared/hooks/use-collapsing-header';
 import { usePlayButtonClick } from '/@/renderer/features/shared/hooks/use-play-button-click';
 import { useIsMutatingCreateFavorite } from '/@/renderer/features/shared/mutations/create-favorite-mutation';
 import { useIsMutatingDeleteFavorite } from '/@/renderer/features/shared/mutations/delete-favorite-mutation';
@@ -75,6 +74,59 @@ export const LibraryHeader = forwardRef(
         const { t } = useTranslation();
         const isCollapsed = useCollapsingHeader();
         const { blurExplicitImages } = useGeneralSettings();
+        const touchXRef = useRef<null | number>(null);
+        const touchYRef = useRef<null | number>(null);
+        const touchAxisRef = useRef<'horizontal' | 'vertical' | null>(null);
+
+        const getVisibleScrollTarget = () =>
+            Array.from(
+                document.querySelectorAll<HTMLElement>(
+                    '[data-overlayscrollbars-viewport], .os-viewport',
+                ),
+            ).find(
+                (element) =>
+                    element.offsetParent !== null && element.scrollHeight > element.clientHeight,
+            );
+
+        const handleHeaderTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
+            if (event.touches.length !== 1) return;
+            touchXRef.current = event.touches[0].clientX;
+            touchYRef.current = event.touches[0].clientY;
+            touchAxisRef.current = null;
+        };
+
+        const handleHeaderTouchMove = (event: React.TouchEvent<HTMLDivElement>) => {
+            if (
+                event.touches.length !== 1 ||
+                touchXRef.current === null ||
+                touchYRef.current === null
+            ) {
+                return;
+            }
+            if ((event.target as HTMLElement).closest('button, input, textarea, [role="slider"]')) {
+                return;
+            }
+
+            const touch = event.touches[0];
+            const deltaY = touchYRef.current - touch.clientY;
+            const deltaX = Math.abs(touchXRef.current - touch.clientX);
+            if (!touchAxisRef.current && (Math.abs(deltaY) > 4 || deltaX > 4)) {
+                touchAxisRef.current = Math.abs(deltaY) >= deltaX ? 'vertical' : 'horizontal';
+            }
+            if (touchAxisRef.current !== 'vertical') return;
+
+            const target = getVisibleScrollTarget();
+            if (!target) return;
+            target.scrollTop += deltaY;
+            touchYRef.current = touch.clientY;
+            event.preventDefault();
+        };
+
+        const handleHeaderTouchEnd = () => {
+            touchAxisRef.current = null;
+            touchXRef.current = null;
+            touchYRef.current = null;
+        };
 
         const itemTypeString = (): string => {
             switch (item.type) {
@@ -166,6 +218,9 @@ export const LibraryHeader = forwardRef(
                     // stays put and leaves about four rows visible.
                     isCollapsed && styles.collapsed,
                 )}
+                onTouchEnd={handleHeaderTouchEnd}
+                onTouchMove={handleHeaderTouchMove}
+                onTouchStart={handleHeaderTouchStart}
                 ref={ref}
             >
                 {topRight && <div className={styles.topRight}>{topRight}</div>}

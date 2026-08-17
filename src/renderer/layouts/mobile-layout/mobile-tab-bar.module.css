@@ -1,7 +1,7 @@
 .tab-bar {
     display: grid;
-    grid-auto-flow: column;
     grid-auto-columns: 1fr;
+    grid-auto-flow: column;
     align-items: stretch;
     width: 100%;
 
@@ -23,10 +23,13 @@
     padding: 6px 4px;
     color: var(--theme-colors-foreground-muted);
     text-decoration: none;
+    appearance: none;
+    background: transparent;
+    border: 0;
+    transition: color 0.15s ease;
 
     /* Stops iOS from flashing a grey tap highlight over the whole tab. */
     -webkit-tap-highlight-color: transparent;
-    transition: color 0.15s ease;
 }
 
 .tab:active {
@@ -42,4 +45,19 @@
     font-weight: 500;
     line-height: 1;
     letter-spacing: 0.01em;
+}
+
+
+/* A tap opens the More drawer but must not leave WebKit's focused-button
+   treatment behind after the drawer is dismissed. Keyboard focus remains
+   visibly discoverable without becoming a permanent touch highlight. */
+
+
+.tab:focus:not(:focus-visible) {
+    outline: none;
+}
+
+.tab:focus-visible {
+    outline: 2px solid var(--theme-colors-primary);
+    outline-offset: -3px;
 }

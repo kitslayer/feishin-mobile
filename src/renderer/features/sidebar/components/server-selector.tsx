@@ -21,7 +21,15 @@ import { Text } from '/@/shared/components/text/text';
 import { ServerType } from '/@/shared/types/domain-types';
 import { ServerFeature } from '/@/shared/types/features-types';
 
-export const ServerSelector = () => {
+interface ServerSelectorProps {
+    position?: 'bottom-start' | 'right-start';
+    withinPortal?: boolean;
+}
+
+export const ServerSelector = ({
+    position = 'right-start',
+    withinPortal = false,
+}: ServerSelectorProps) => {
     const { t } = useTranslation();
     const currentServer = useCurrentServer();
     const { data: scanStatus, isScanning, isWatching } = useScanStatus();
@@ -77,7 +85,7 @@ export const ServerSelector = () => {
               : OpenSubsonicLogo;
 
     return (
-        <DropdownMenu offset={0} position="right-start" withinPortal={false}>
+        <DropdownMenu offset={0} position={position} withinPortal={withinPortal}>
             <DropdownMenu.Target>
                 <div className={styles.popoverTarget}>
                     <Box className={styles.buttonContainer}>
