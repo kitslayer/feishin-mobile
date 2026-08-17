@@ -8,47 +8,48 @@
  * zustand (in memory) and is mirrored to IndexedDB for durability.
  */
 import { del, get, set } from 'idb-keyval';
-
-import { QueueSong, Song } from '/@/shared/types/domain-types';
 import { create } from 'zustand';
-import { useShallow } from 'zustand/react/shallow';
 import { devtools, subscribeWithSelector } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
+import { useShallow } from 'zustand/react/shallow';
+
+import { QueueSong, Song } from '/@/shared/types/domain-types';
 
 export interface DownloadedTrack {
     /** Bytes on disk. */
     bytes: number;
-    /**
-     * Enough of the song to browse and play it with no network. Without this
-     * the downloads list can only show opaque ids, and nothing can be queued
-     * while offline because the queue needs real song records.
-     */
-    song: QueueSong | Song;
     /** File extension actually written (may differ from the source container). */
     ext: string;
     /** capacitor://localhost/... URL, ready to hand to the audio element. */
     localUrl: string;
     /** Path relative to the offline directory. */
     path: string;
-    serverId: string;
-    songId: string;
     /** Epoch ms, used for LRU eviction. */
     savedAt: number;
+    serverId: string;
+    /**
+     * Enough of the song to browse and play it with no network. Without this
+     * the downloads list can only show opaque ids, and nothing can be queued
+     * while offline because the queue needs real song records.
+     */
+    song: QueueSong | Song;
+    songId: string;
     /** Epoch ms of last playback, used for LRU eviction. */
     usedAt: number;
 }
-
-export type DownloadStatus = 'done' | 'downloading' | 'error' | 'queued';
 
 export interface DownloadJob {
     error?: string;
     /** 0..1 */
     progress: number;
     serverId: string;
+    song: QueueSong | Song;
     songId: string;
     status: DownloadStatus;
     title: string;
 }
+
+export type DownloadStatus = 'done' | 'downloading' | 'error' | 'queued';
 
 interface DownloadsState {
     /** key -> local art URL. Keyed `${serverId}:${imageId}`. */
@@ -96,11 +97,10 @@ const persistArt = () => {
 };
 
 export const downloadsActions = {
-    setArt: (serverId: string, imageId: string, localUrl: string) => {
+    clearJob: (serverId: string, songId: string) => {
         useDownloadsStore.setState((state) => {
-            state.art[trackKey(serverId, imageId)] = localUrl;
+            delete state.jobs[trackKey(serverId, songId)];
         });
-        persistArt();
     },
 
     /** Reconcile after a filesystem check finds a file missing. */
@@ -138,6 +138,13 @@ export const downloadsActions = {
         void del(ART_IDB_KEY).catch(() => {});
     },
 
+    setArt: (serverId: string, imageId: string, localUrl: string) => {
+        useDownloadsStore.setState((state) => {
+            state.art[trackKey(serverId, imageId)] = localUrl;
+        });
+        persistArt();
+    },
+
     setJob: (job: DownloadJob) => {
         useDownloadsStore.setState((state) => {
             state.jobs[trackKey(job.serverId, job.songId)] = job;
@@ -156,15 +163,6 @@ export const downloadsActions = {
         });
     },
 
-    /** Records a completed download and drops any job entry for it. */
-    upsert: (track: DownloadedTrack) => {
-        useDownloadsStore.setState((state) => {
-            state.catalog[trackKey(track.serverId, track.songId)] = track;
-            delete state.jobs[trackKey(track.serverId, track.songId)];
-        });
-        persistCatalog();
-    },
-
     /** Bumps LRU recency when a downloaded track is played. */
     touch: (serverId: string, songId: string) => {
         const key = trackKey(serverId, songId);
@@ -178,10 +176,13 @@ export const downloadsActions = {
         persistCatalog();
     },
 
-    clearJob: (serverId: string, songId: string) => {
+    /** Records a completed download and drops any job entry for it. */
+    upsert: (track: DownloadedTrack) => {
         useDownloadsStore.setState((state) => {
-            delete state.jobs[trackKey(serverId, songId)];
+            state.catalog[trackKey(track.serverId, track.songId)] = track;
+            delete state.jobs[trackKey(track.serverId, track.songId)];
         });
+        persistCatalog();
     },
 };
 

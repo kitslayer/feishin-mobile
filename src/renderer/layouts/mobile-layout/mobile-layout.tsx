@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import { AnimatePresence } from 'motion/react';
-import { useEffect, Suspense } from 'react';
+import { Suspense, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router';
 
 import styles from './mobile-layout.module.css';
@@ -9,9 +9,9 @@ import { ContextMenuController } from '/@/renderer/features/context-menu/context
 import { FullScreenVisualizer } from '/@/renderer/features/player/components/full-screen-visualizer';
 import { MobileFullscreenPlayer } from '/@/renderer/features/player/components/mobile-fullscreen-player';
 import { MobileSidebar } from '/@/renderer/features/sidebar/components/mobile-sidebar';
+import { PlayerBar } from '/@/renderer/layouts/default-layout/player-bar';
 import { MobileBack } from '/@/renderer/layouts/mobile-layout/mobile-back';
 import { MobileTabBar } from '/@/renderer/layouts/mobile-layout/mobile-tab-bar';
-import { PlayerBar } from '/@/renderer/layouts/default-layout/player-bar';
 import { WindowBar } from '/@/renderer/layouts/window-bar';
 import {
     useFullScreenPlayerOverlayState,
@@ -48,9 +48,10 @@ export const MobileLayout = ({ shell }: MobileLayoutProps) => {
         <>
             <div
                 className={clsx(styles.layout, {
-                    [styles.macos]: windowBarStyle === Platform.MACOS,
-                    [styles.windows]: windowBarStyle === Platform.WINDOWS,
                     [styles.idlePlayer]: !currentSong?.id,
+                    [styles.macos]: windowBarStyle === Platform.MACOS,
+                    [styles.shell]: shell,
+                    [styles.windows]: windowBarStyle === Platform.WINDOWS,
                 })}
                 id="mobile-layout"
             >
@@ -61,7 +62,7 @@ export const MobileLayout = ({ shell }: MobileLayoutProps) => {
                         <Outlet />
                     </Suspense>
                 </main>
-                {currentSong?.id && <PlayerBar />}
+                {!shell && currentSong?.id && <PlayerBar />}
                 {!shell && (
                     <div className={styles.tabBarArea}>
                         <MobileTabBar onMore={openSidebar} />

@@ -231,3 +231,22 @@
     -webkit-box-orient: vertical;
     white-space: normal;
 }
+
+/* Phone cards stay image-first and give a small tactile acknowledgement without
+   introducing hover-only controls or decorative chrome. */
+@media (pointer: coarse) {
+    .container.poster {
+        transition:
+            opacity 0.14s ease,
+            transform 0.14s ease;
+    }
+
+    .container.poster:active {
+        opacity: 0.88;
+        transform: scale(0.98);
+    }
+
+    .container.poster .image-container {
+        box-shadow: 0 8px 20px rgb(0 0 0 / 18%);
+    }
+}

@@ -1,6 +1,7 @@
 import { lazy, Suspense, useMemo } from 'react';
 
 import { usePlaylistListFilters } from '/@/renderer/features/playlists/hooks/use-playlist-list-filters';
+import { useIsMobile } from '/@/renderer/hooks/use-is-mobile';
 import { ItemListSettings, useCurrentServer, useListSettings } from '/@/renderer/store';
 import { Spinner } from '/@/shared/components/spinner/spinner';
 import { PlaylistListQuery } from '/@/shared/types/domain-types';
@@ -42,12 +43,25 @@ export const PlaylistListContent = () => {
     const { display, grid, itemsPerPage, pagination, table } = useListSettings(
         ItemListKey.PLAYLIST,
     );
+    const isMobile = useIsMobile();
+    // Playlists are visual destinations on the phone. Do not inherit a desktop
+    // table preference here: preserve that setting for desktop, but surface
+    // playlist artwork in a predictable two-column grid on iPhone.
+    const resolvedGrid = isMobile
+        ? {
+              ...grid,
+              itemGap: 'sm' as const,
+              itemsPerRow: 2,
+              itemsPerRowEnabled: true,
+              size: 'large' as const,
+          }
+        : grid;
 
     return (
         <Suspense fallback={<Spinner container />}>
             <PlaylistListView
-                display={display}
-                grid={grid}
+                display={isMobile ? ListDisplayType.GRID : display}
+                grid={resolvedGrid}
                 itemsPerPage={itemsPerPage}
                 pagination={pagination}
                 table={table}

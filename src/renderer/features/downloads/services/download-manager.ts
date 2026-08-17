@@ -11,6 +11,7 @@
  */
 import { FileTransfer } from '@capacitor/file-transfer';
 
+import { api } from '/@/renderer/api';
 import {
     downloadsActions,
     getDownloadedArt,
@@ -31,7 +32,6 @@ import {
     renameFile,
     toPlayableUrl,
 } from '/@/renderer/features/downloads/utils/offline-storage';
-import { api } from '/@/renderer/api';
 import { logger } from '/@/renderer/utils/logger';
 import { LibraryItem, QueueSong, Song } from '/@/shared/types/domain-types';
 
@@ -44,6 +44,9 @@ interface QueueEntry {
 
 const pending: QueueEntry[] = [];
 let running = false;
+// FileTransfer has no cancellation API. Advancing this token makes an active
+// transfer discard its result after Remove all instead of resurrecting it.
+let queueGeneration = 0;
 
 /** Bitrate used when a container has to be transcoded to be playable on iOS. */
 const TRANSCODE_BITRATE = 320;
@@ -132,22 +135,26 @@ const downloadArt = async (song: DownloadableSong, serverId: string) => {
     }
 };
 
-const downloadOne = async ({ serverId, song }: QueueEntry) => {
+const downloadOne = async ({ serverId, song }: QueueEntry, generation: number) => {
     const existing = getDownloadedTrack(serverId, song.id);
     if (existing) return;
 
     downloadsActions.setJob({
         progress: 0,
         serverId,
+        song,
         songId: song.id,
         status: 'downloading',
         title: song.name,
     });
 
+    let path: string | undefined;
+    let partPath: string | undefined;
+
     try {
         const { ext, url } = await resolveSourceUrl(song, serverId);
-        const path = audioPathFor(serverId, song.id, ext);
-        const partPath = `${path}.part`;
+        path = audioPathFor(serverId, song.id, ext);
+        partPath = `${path}.part`;
 
         await ensureDir(path.slice(0, path.lastIndexOf('/')));
 
@@ -157,7 +164,16 @@ const downloadOne = async ({ serverId, song }: QueueEntry) => {
         }
 
         await FileTransfer.downloadFile({ path: partUri, progress: true, url });
+        if (generation !== queueGeneration) {
+            await deleteFile(partPath);
+            return;
+        }
+
         await renameFile(partPath, path);
+        if (generation !== queueGeneration) {
+            await deleteFile(path);
+            return;
+        }
 
         const uri = await getUri(path);
         if (!uri) {
@@ -179,11 +195,18 @@ const downloadOne = async ({ serverId, song }: QueueEntry) => {
         await downloadArt(song, serverId);
         await enforceStorageCap();
     } catch (error) {
+        if (generation !== queueGeneration) {
+            if (partPath) await deleteFile(partPath);
+            if (path) await deleteFile(path);
+            return;
+        }
+
         logger.error(`[downloads] failed for ${song.name}: ${String(error)}`);
         downloadsActions.setJob({
             error: String(error),
             progress: 0,
             serverId,
+            song,
             songId: song.id,
             status: 'error',
             title: song.name,
@@ -199,7 +222,7 @@ const drain = async () => {
         while (pending.length) {
             const next = pending.shift();
             if (next) {
-                await downloadOne(next);
+                await downloadOne(next, queueGeneration);
             }
         }
     } finally {
@@ -249,6 +272,7 @@ export const downloadManager = {
             downloadsActions.setJob({
                 progress: 0,
                 serverId,
+                song,
                 songId: song.id,
                 status: 'queued',
                 title: song.name,
@@ -268,6 +292,9 @@ export const downloadManager = {
     },
 
     removeAll: async () => {
+        queueGeneration += 1;
+        pending.splice(0);
+
         const { catalog } = useDownloadsStore.getState();
 
         for (const track of Object.values(catalog)) {
@@ -283,9 +310,11 @@ export const downloadManager = {
         const failed = Object.values(jobs).filter((job) => job.status === 'error');
 
         for (const job of failed) {
+            // Keep an old error visible if it predates this version and lacks
+            // source metadata; otherwise retry would silently discard it again.
+            if (!job.song) continue;
             downloadsActions.clearJob(job.serverId, job.songId);
+            await downloadManager.enqueue([job.song], job.serverId);
         }
-
-        void drain();
     },
 };

@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useRef } from 'react';
 
 import { useItemImageUrl } from '/@/renderer/components/item-image/item-image';
+import { scrobbleOutbox } from '/@/renderer/features/downloads/services/scrobble-outbox';
+import { useDownloadsStore } from '/@/renderer/features/downloads/store/downloads.store';
 import { usePlayerEvents } from '/@/renderer/features/player/audio-player/hooks/use-player-events';
 import { useSendScrobble } from '/@/renderer/features/player/mutations/scrobble-mutation';
 import {
@@ -16,7 +18,7 @@ import {
 } from '/@/renderer/store';
 import { logger } from '/@/renderer/utils/logger';
 import { hasFeature } from '/@/shared/api/utils';
-import { LibraryItem, QueueSong, ServerType } from '/@/shared/types/domain-types';
+import { LibraryItem, QueueSong, ScrobbleArgs, ServerType } from '/@/shared/types/domain-types';
 import { ServerFeature } from '/@/shared/types/features-types';
 import { PlayerStatus } from '/@/shared/types/types';
 
@@ -323,19 +325,25 @@ export const useScrobble = () => {
                 });
 
                 if (shouldSubmitScrobble) {
-                    sendScrobble.mutate(
-                        {
-                            apiClientProps: { serverId: currentSong._serverId || '' },
-                            query: {
-                                albumId: currentSong.albumId,
-                                id: currentSong.id,
-                                mediaType: mediaType,
-                                playbackRate: playbackRate,
-                                position: getPositionValue(currentSong.duration ?? 0, useTicks),
-                                submission: true,
-                            },
+                    const args: ScrobbleArgs = {
+                        apiClientProps: { serverId: currentSong._serverId || '' },
+                        query: {
+                            albumId: currentSong.albumId,
+                            id: currentSong.id,
+                            mediaType: mediaType,
+                            playbackRate: playbackRate,
+                            position: getPositionValue(currentSong.duration ?? 0, useTicks),
+                            submission: true,
                         },
-                        {
+                    };
+
+                    // React Query pauses offline mutations before mutationFn runs.
+                    // Persist first so an iOS app termination cannot discard a
+                    // legitimately completed offline play.
+                    if (useDownloadsStore.getState().offline) {
+                        void scrobbleOutbox.enqueue(args);
+                    } else {
+                        sendScrobble.mutate(args, {
                             onSuccess: () => {
                                 logger.info('Scrobbled a submission event', {
                                     id: currentSong.id,
@@ -343,8 +351,8 @@ export const useScrobble = () => {
                                 });
                                 sendProgressAfterSubmission(currentSong);
                             },
-                        },
-                    );
+                        });
+                    }
 
                     isCurrentSongScrobbledRef.current = true;
                 }

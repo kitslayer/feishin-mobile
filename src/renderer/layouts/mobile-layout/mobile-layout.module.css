@@ -6,6 +6,7 @@
         'main-content'
         'player'
         'tab-bar';
+
     /* The window-bar row is 0 on web (WindowBar renders null off Electron), so
        main content started at y=0 and every page header sat under the Dynamic
        Island. Reserve the top inset as that row, and grow the player row by the
@@ -81,4 +82,15 @@
         calc(100dvh - 49px - env(safe-area-inset-top) - env(safe-area-inset-bottom))
         0
         calc(49px + env(safe-area-inset-bottom));
+}
+
+
+/* Setup, login and recovery routes intentionally render no player or tab bar.
+   Keep only their safe-area rows so the shell cannot reserve an invisible tab strip. */
+.shell {
+    grid-template-rows:
+        env(safe-area-inset-top)
+        calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom))
+        0
+        env(safe-area-inset-bottom);
 }

@@ -41,6 +41,9 @@ export const MobilePlayerbar = () => {
     const isSongDefined = Boolean(currentSong?.id);
 
     const handleToggleFullScreenPlayer = (e?: KeyboardEvent | MouseEvent<HTMLDivElement>) => {
+        // Title/artist/album are Links in the shared renderer. The mini-player
+        // action is fullscreen playback, not hidden background navigation.
+        e?.preventDefault();
         e?.stopPropagation();
         // Set active tab to player when opening fullscreen player
         setStore({ activeTab: 'player' });
@@ -68,10 +71,7 @@ export const MobilePlayerbar = () => {
             {/* The whole bar is the target -- previously only the artwork opened
                 the player, and the metadata rows actively stopped propagation,
                 so tapping the title or the empty space did nothing. */}
-            <div
-                className={styles.contentWrapper}
-                onClick={handleToggleFullScreenPlayer}
-            >
+            <div className={styles.contentWrapper} onClick={handleToggleFullScreenPlayer}>
                 <LayoutGroup>
                     <AnimatePresence initial={false} mode="popLayout">
                         {currentSong?.id && (

@@ -184,3 +184,9 @@
 .uppercase {
     text-transform: uppercase;
 }
+
+@media (pointer: coarse) {
+    .root {
+        min-height: 44px;
+    }
+}
