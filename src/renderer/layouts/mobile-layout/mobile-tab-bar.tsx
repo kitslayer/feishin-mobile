@@ -8,7 +8,7 @@ import { Icon } from '/@/shared/components/icon/icon';
 import { LibraryItem } from '/@/shared/types/domain-types';
 
 interface Tab {
-    icon: 'download' | 'home' | 'itemAlbum' | 'search';
+    icon: 'home' | 'itemAlbum' | 'playlist' | 'search';
     label: string;
     /** Extra route prefixes that should keep this tab highlighted. */
     matches?: string[];
@@ -40,7 +40,15 @@ export const MobileTabBar = ({ onMore }: MobileTabBarProps) => {
             label: t('page.sidebar.search'),
             to: `/search/${LibraryItem.SONG}`,
         },
-        { icon: 'download', label: t('page.sidebar.downloads', { postProcess: 'titleCase' }), to: AppRoute.DOWNLOADS },
+        // Downloads is deliberately not a tab: downloaded files are preferred
+        // automatically whenever they exist, so the page is for managing them,
+        // not for reaching music. Playlists is what gets opened daily.
+        {
+            icon: 'playlist',
+            label: t('page.sidebar.playlists'),
+            matches: ['/playlists'],
+            to: AppRoute.PLAYLISTS,
+        },
     ];
 
     return (

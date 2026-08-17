@@ -65,7 +65,13 @@ export const MobilePlayerbar = () => {
 
     return (
         <div className={clsx(styles.container, PlaybackSelectors.mediaPlayer)}>
-            <div className={styles.contentWrapper}>
+            {/* The whole bar is the target -- previously only the artwork opened
+                the player, and the metadata rows actively stopped propagation,
+                so tapping the title or the empty space did nothing. */}
+            <div
+                className={styles.contentWrapper}
+                onClick={handleToggleFullScreenPlayer}
+            >
                 <LayoutGroup>
                     <AnimatePresence initial={false} mode="popLayout">
                         {currentSong?.id && (
@@ -104,7 +110,7 @@ export const MobilePlayerbar = () => {
                         )}
                     </AnimatePresence>
                     <motion.div className={styles.metadataStack} layout="position">
-                        <div className={styles.lineItem} onClick={stopPropagation}>
+                        <div className={styles.lineItem}>
                             <Group align="center" gap="xs" wrap="nowrap">
                                 <Text
                                     className={PlaybackSelectors.songTitle}

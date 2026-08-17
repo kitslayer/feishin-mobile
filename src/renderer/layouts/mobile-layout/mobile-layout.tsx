@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 import { AnimatePresence } from 'motion/react';
-import { Suspense } from 'react';
-import { Outlet } from 'react-router';
+import { useEffect, Suspense } from 'react';
+import { Outlet, useLocation } from 'react-router';
 
 import styles from './mobile-layout.module.css';
 
@@ -24,6 +24,14 @@ interface MobileLayoutProps {
 
 export const MobileLayout = ({ shell }: MobileLayoutProps) => {
     const [sidebarOpened, { close: closeSidebar, open: openSidebar }] = useDisclosure(false);
+    const location = useLocation();
+
+    // Close the drawer whenever navigation happens. Without this a tap on a
+    // playlist (or any drawer entry) navigated correctly but left the drawer
+    // covering the result, so it read as "the tap did nothing".
+    useEffect(() => {
+        closeSidebar();
+    }, [closeSidebar, location.pathname]);
     const {
         expanded: isFullScreenPlayerExpanded,
         visualizerExpanded: isFullScreenVisualizerExpanded,

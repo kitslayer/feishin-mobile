@@ -120,6 +120,8 @@ export const PlaylistRowButton = memo(
         const activePlaylistId = useCurrentPlaylistContextId();
         const isActive = activePlaylistId === item.id;
 
+        const isCoarsePointer =
+            typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches;
         const [isHovered, setIsHovered] = useState(false);
         const isSmartPlaylist = Boolean(item.rules);
         const isAddDragActive = useContext(SidebarPlaylistAddDragContext);
@@ -286,8 +288,12 @@ export const PlaylistRowButton = memo(
                     e.preventDefault();
                     onContextMenu(e, item);
                 }}
-                onMouseEnter={() => setIsHovered(true)}
-                onMouseLeave={() => setIsHovered(false)}
+                // No hover on touch: iOS fires a synthetic mouseover on the
+                // first tap, and changing the row's class swaps the content
+                // under the finger, so WebKit suppressed that tap's click --
+                // the playlist needed two taps to open.
+                onMouseEnter={() => !isCoarsePointer && setIsHovered(true)}
+                onMouseLeave={() => !isCoarsePointer && setIsHovered(false)}
                 ref={ref}
                 to={url}
                 variants={playlistRowDimVariants}
