@@ -4,6 +4,7 @@
     gap: var(--theme-spacing-sm);
     align-items: center;
     width: 100%;
+
     /* The tab bar below now owns the home-indicator inset. */
     height: 90px;
     padding: 0.5rem calc(1rem + env(safe-area-inset-right)) 0.5rem

@@ -85,9 +85,7 @@ const SearchRoute = lazy(() => import('/@/renderer/features/search/routes/search
 const FavoritesRoute = lazy(() => import('/@/renderer/features/favorites/routes/favorites-route'));
 
 const SettingsRoute = lazy(() => import('/@/renderer/features/settings/routes/settings-route'));
-const DownloadsRoute = lazy(
-    () => import('/@/renderer/features/downloads/routes/downloads-route'),
-);
+const DownloadsRoute = lazy(() => import('/@/renderer/features/downloads/routes/downloads-route'));
 
 const LazyLyricsSettingsContextModal = lazy(() =>
     import('/@/renderer/features/lyrics/components/lyrics-settings-modal').then((module) => ({
@@ -329,7 +327,7 @@ export const AppRouter = () => {
                                 />
                                 <Route element={<LoginRoute />} path={AppRoute.LOGIN} />
                             </Route>
-                            <Route element={<ResponsiveLayout />}>
+                            <Route element={<ResponsiveLayout shell />}>
                                 <Route element={<NoNetworkRoute />} path={AppRoute.NO_NETWORK} />
                             </Route>
                         </Route>
