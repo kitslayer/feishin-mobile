@@ -179,7 +179,8 @@
         "scanItemCount": "{{count}} items",
         "scanningLibrary": "Scanning library…",
         "error": "error",
-        "remove": "remove"
+        "remove": "remove",
+        "more": "more"
     },
     "entity": {
         "album_one": "Album",

@@ -1,0 +1,45 @@
+.tab-bar {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    align-items: stretch;
+    width: 100%;
+
+    /* The bar owns the home-indicator inset so its targets stay above it. */
+    padding-bottom: env(safe-area-inset-bottom);
+    background: var(--theme-colors-background);
+    border-top: 1px solid var(--theme-colors-border);
+}
+
+.tab {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    align-items: center;
+    justify-content: center;
+
+    /* 49pt is the iOS tab bar height, and clears the 44pt touch minimum. */
+    min-height: 49px;
+    padding: 6px 4px;
+    color: var(--theme-colors-foreground-muted);
+    text-decoration: none;
+
+    /* Stops iOS from flashing a grey tap highlight over the whole tab. */
+    -webkit-tap-highlight-color: transparent;
+    transition: color 0.15s ease;
+}
+
+.tab:active {
+    opacity: 0.6;
+}
+
+.active {
+    color: var(--theme-colors-primary);
+}
+
+.label {
+    font-size: 10px;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 0.01em;
+}

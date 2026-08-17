@@ -9,10 +9,10 @@ import { ContextMenuController } from '/@/renderer/features/context-menu/context
 import { FullScreenVisualizer } from '/@/renderer/features/player/components/full-screen-visualizer';
 import { MobileFullscreenPlayer } from '/@/renderer/features/player/components/mobile-fullscreen-player';
 import { MobileSidebar } from '/@/renderer/features/sidebar/components/mobile-sidebar';
+import { MobileTabBar } from '/@/renderer/layouts/mobile-layout/mobile-tab-bar';
 import { PlayerBar } from '/@/renderer/layouts/default-layout/player-bar';
 import { WindowBar } from '/@/renderer/layouts/window-bar';
 import { useFullScreenPlayerOverlayState, useWindowBarStyle } from '/@/renderer/store';
-import { ActionIcon } from '/@/shared/components/action-icon/action-icon';
 import { Drawer } from '/@/shared/components/drawer/drawer';
 import { Spinner } from '/@/shared/components/spinner/spinner';
 import { useDisclosure } from '/@/shared/hooks/use-disclosure';
@@ -40,22 +40,17 @@ export const MobileLayout = ({ shell }: MobileLayoutProps) => {
                 id="mobile-layout"
             >
                 {!shell && <WindowBar />}
-                {!shell && (
-                    <ActionIcon
-                        className={styles.drawerButton}
-                        icon="menu"
-                        onClick={openSidebar}
-                        size="lg"
-                        tooltip={{ label: 'Menu' }}
-                        variant="subtle"
-                    />
-                )}
                 <main className={styles.mainContent}>
                     <Suspense fallback={<Spinner container />}>
                         <Outlet />
                     </Suspense>
                 </main>
                 <PlayerBar />
+                {!shell && (
+                    <div className={styles.tabBarArea}>
+                        <MobileTabBar onMore={openSidebar} />
+                    </div>
+                )}
             </div>
             {!shell && (
                 <Drawer

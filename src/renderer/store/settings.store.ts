@@ -3028,7 +3028,20 @@ export const useListSettings = (type: ItemListKey) => {
             return settings;
         }
 
-        return { ...settings, table: { ...settings.table, columns } };
+        return {
+            ...settings,
+            // Numbered page controls are a desktop pattern -- a phone scrolls.
+            pagination: ListPaginationType.INFINITE,
+            table: {
+                ...settings.table,
+                columns,
+                // Spreadsheet chrome is what makes this read as a desktop app.
+                // A phone list is just rows.
+                enableHeader: false,
+                enableHorizontalBorders: false,
+                enableVerticalBorders: false,
+            },
+        };
     }, [isNarrow, settings]);
 };
 

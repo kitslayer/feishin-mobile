@@ -4,9 +4,10 @@
     gap: var(--theme-spacing-sm);
     align-items: center;
     width: 100%;
-    height: calc(90px + env(safe-area-inset-bottom));
-    padding: 0.5rem calc(1rem + env(safe-area-inset-right))
-        calc(0.5rem + env(safe-area-inset-bottom)) calc(1rem + env(safe-area-inset-left));
+    /* The tab bar below now owns the home-indicator inset. */
+    height: 90px;
+    padding: 0.5rem calc(1rem + env(safe-area-inset-right)) 0.5rem
+        calc(1rem + env(safe-area-inset-left));
     overflow: hidden;
 }
 
