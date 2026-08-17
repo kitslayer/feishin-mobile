@@ -50,9 +50,12 @@ img {
 }
 
 @media only screen and (width < 640px) {
+    /* The native shell owns vertical scrolling inside its route scrollports.
+       Re-enabling document-level horizontal overflow lets an overwide detail or
+       portal drag the whole WKWebView sideways, exposing a blank edge. */
     body,
     html {
-        overflow-x: auto;
+        overflow-x: hidden;
     }
 }
 
