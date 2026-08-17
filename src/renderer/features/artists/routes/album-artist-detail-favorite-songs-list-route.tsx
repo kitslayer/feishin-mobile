@@ -19,10 +19,9 @@ import { FilterBar } from '/@/renderer/features/shared/components/filter-bar';
 import { PageErrorBoundary } from '/@/renderer/features/shared/components/page-error-boundary';
 import { useSearchTermFilter } from '/@/renderer/features/shared/hooks/use-search-term-filter';
 import { FILTER_KEYS, searchLibraryItems } from '/@/renderer/features/shared/utils';
-import { usePlayerSong } from '/@/renderer/store';
+import { usePlayerSong, useListSettings } from '/@/renderer/store';
 import { useAppStore } from '/@/renderer/store/app.store';
 import { useCurrentServer } from '/@/renderer/store/auth.store';
-import { useSettingsStore } from '/@/renderer/store/settings.store';
 import { sortSongList } from '/@/shared/api/utils';
 import { useLocalStorage } from '/@/shared/hooks/use-local-storage';
 import { LibraryItem, Song } from '/@/shared/types/domain-types';
@@ -84,7 +83,7 @@ const AlbumArtistDetailFavoriteSongsListRoute = () => {
 
     const itemCount = sortedSongs.length;
 
-    const tableConfig = useSettingsStore((state) => state.lists[ItemListKey.SONG]?.table);
+    const tableConfig = useListSettings(ItemListKey.SONG)?.table;
     const currentSong = usePlayerSong();
     const player = usePlayer();
 

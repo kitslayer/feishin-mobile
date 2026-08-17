@@ -53,8 +53,7 @@ import {
     useCurrentServerId,
     usePlayerSong,
     useShowFavorites,
-    useShowRatings,
-} from '/@/renderer/store';
+    useShowRatings, useListSettings } from '/@/renderer/store';
 import {
     useArtistItems,
     useArtistRadioCount,
@@ -323,7 +322,7 @@ const AlbumArtistMetadataTopSongsContent = ({
         defaultValue: 'community',
         key: 'album-artist-top-songs-query-type',
     });
-    const tableConfig = useSettingsStore((state) => state.lists[ItemListKey.SONG]?.table);
+    const tableConfig = useListSettings(ItemListKey.SONG)?.table;
     const currentSong = usePlayerSong();
     const player = usePlayer();
     const serverId = useCurrentServerId();
@@ -621,7 +620,7 @@ const AlbumArtistMetadataFavoriteSongs = ({
     );
     const sortBy = albumArtistDetailFavoriteSongsSort.sortBy;
     const sortOrder = albumArtistDetailFavoriteSongsSort.sortOrder;
-    const tableConfig = useSettingsStore((state) => state.lists[ItemListKey.SONG]?.table);
+    const tableConfig = useListSettings(ItemListKey.SONG)?.table;
     const currentSong = usePlayerSong();
     const player = usePlayer();
     const serverId = useCurrentServerId();

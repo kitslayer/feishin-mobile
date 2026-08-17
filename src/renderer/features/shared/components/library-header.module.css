@@ -188,3 +188,62 @@
         justify-content: space-between;
     }
 }
+
+/* Phone: the stacked 250px-artwork header ate ~400px of a 956px screen, so a
+   playlist showed about four rows. Lay it out horizontally with small art --
+   the same shape iOS uses once a header collapses. */
+@media (width < 768px) {
+    .library-header {
+        grid-template-areas: 'image info';
+        grid-template-rows: auto;
+        grid-template-columns: 116px minmax(0, 1fr);
+        gap: var(--theme-spacing-md);
+        align-items: center;
+        justify-items: start;
+        padding: var(--theme-spacing-md) var(--theme-spacing-md)
+            var(--theme-spacing-sm);
+        text-align: left;
+    }
+
+    .library-header .image,
+    .library-header :global(.item-image-placeholder) {
+        width: 116px !important;
+        height: 116px;
+    }
+
+    .top-right {
+        top: var(--theme-spacing-xs);
+        right: var(--theme-spacing-xs);
+    }
+
+    /* Left-aligned reads better beside artwork, and centred text was making
+       the header look off-centre against the left-aligned track list. */
+    .metadata-section {
+        align-items: flex-start;
+        justify-content: flex-end;
+        min-width: 0;
+        height: auto;
+        text-align: left;
+    }
+
+    /* The action row (Play / Next / Last / Album radio) ran off the right edge
+       with no way to reach the last button. Let it scroll sideways. */
+    .metadata-section > :global(.mantine-Group-root) {
+        flex-wrap: nowrap;
+        max-width: 100%;
+        overflow-x: auto;
+        overscroll-behavior-x: contain;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .metadata-section > :global(.mantine-Group-root)::-webkit-scrollbar {
+        display: none;
+    }
+
+    .title {
+        font-size: 1.6rem !important;
+        line-height: 1.15 !important;
+        text-align: left;
+    }
+}

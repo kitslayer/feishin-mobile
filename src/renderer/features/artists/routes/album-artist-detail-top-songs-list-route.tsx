@@ -14,9 +14,8 @@ import { AlbumArtistDetailTopSongsListHeader } from '/@/renderer/features/artist
 import { usePlayer } from '/@/renderer/features/player/context/player-context';
 import { AnimatedPage } from '/@/renderer/features/shared/components/animated-page';
 import { PageErrorBoundary } from '/@/renderer/features/shared/components/page-error-boundary';
-import { usePlayerSong } from '/@/renderer/store';
+import { usePlayerSong, useListSettings } from '/@/renderer/store';
 import { useCurrentServer } from '/@/renderer/store/auth.store';
-import { useSettingsStore } from '/@/renderer/store/settings.store';
 import { useLocalStorage } from '/@/shared/hooks/use-local-storage';
 import { LibraryItem, Song } from '/@/shared/types/domain-types';
 import { ItemListKey } from '/@/shared/types/types';
@@ -56,7 +55,7 @@ const AlbumArtistDetailTopSongsListRoute = () => {
     const itemCount = topSongsQuery?.data?.items?.length || 0;
     const songs = useMemo(() => topSongsQuery?.data?.items || [], [topSongsQuery?.data?.items]);
 
-    const tableConfig = useSettingsStore((state) => state.lists[ItemListKey.SONG]?.table);
+    const tableConfig = useListSettings(ItemListKey.SONG)?.table;
     const currentSong = usePlayerSong();
     const player = usePlayer();
 

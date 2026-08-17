@@ -1,0 +1,30 @@
+.back {
+    position: absolute;
+
+    /* Sits inside main-content, which already starts below the Dynamic Island,
+       so this only needs a small offset of its own. */
+    top: calc(env(safe-area-inset-top) + 0.5rem);
+    left: calc(env(safe-area-inset-left) + 0.5rem);
+    z-index: 150;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    /* 44pt minimum. */
+    width: 44px;
+    height: 44px;
+    padding: 0;
+
+    color: var(--theme-colors-foreground);
+    background: color-mix(in srgb, var(--theme-colors-background) 72%, transparent);
+    border: 1px solid var(--theme-colors-border);
+    border-radius: 50%;
+    backdrop-filter: blur(12px);
+
+    -webkit-tap-highlight-color: transparent;
+}
+
+.back:active {
+    opacity: 0.6;
+}

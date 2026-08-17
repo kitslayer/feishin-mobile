@@ -34,7 +34,7 @@ import { ListSortOrderToggleButtonControlled } from '/@/renderer/features/shared
 import { FILTER_KEYS, searchLibraryItems } from '/@/renderer/features/shared/utils';
 import { useHotkeys } from '/@/renderer/hooks/use-hotkeys';
 import { AppRoute } from '/@/renderer/router/routes';
-import { useCurrentServer, usePlayerSong } from '/@/renderer/store';
+import { useCurrentServer, usePlayerSong, useListSettings } from '/@/renderer/store';
 import { useExternalLinks, useSettingsStore } from '/@/renderer/store/settings.store';
 import { sentenceCase, titleCase } from '/@/renderer/utils';
 import { replaceURLWithHTMLLinks } from '/@/renderer/utils/linkify';
@@ -717,7 +717,7 @@ const AlbumDetailSongsTable = ({ songs }: AlbumDetailSongsTableProps) => {
     const { t } = useTranslation();
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearchTerm] = useDebouncedValue(searchTerm, 300);
-    const tableConfig = useSettingsStore((state) => state.lists[ItemListKey.ALBUM_DETAIL]?.table);
+    const tableConfig = useListSettings(ItemListKey.ALBUM_DETAIL)?.table;
 
     const currentSong = usePlayerSong();
 

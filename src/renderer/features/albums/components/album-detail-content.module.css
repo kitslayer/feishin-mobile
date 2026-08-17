@@ -131,4 +131,16 @@
         padding-right: 1rem;
         padding-left: 1rem;
     }
+
+    /* Tracks are the point of the page. Genres, tags, label and external links
+       pushed them ~600px down the screen; put them after the music. */
+    .content-layout {
+        grid-template-areas:
+            'songs'
+            'metadata';
+    }
+
+    .metadata-column {
+        align-items: flex-start;
+    }
 }

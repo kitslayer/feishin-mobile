@@ -9,6 +9,7 @@ import { ContextMenuController } from '/@/renderer/features/context-menu/context
 import { FullScreenVisualizer } from '/@/renderer/features/player/components/full-screen-visualizer';
 import { MobileFullscreenPlayer } from '/@/renderer/features/player/components/mobile-fullscreen-player';
 import { MobileSidebar } from '/@/renderer/features/sidebar/components/mobile-sidebar';
+import { MobileBack } from '/@/renderer/layouts/mobile-layout/mobile-back';
 import { MobileTabBar } from '/@/renderer/layouts/mobile-layout/mobile-tab-bar';
 import { PlayerBar } from '/@/renderer/layouts/default-layout/player-bar';
 import { WindowBar } from '/@/renderer/layouts/window-bar';
@@ -48,6 +49,7 @@ export const MobileLayout = ({ shell }: MobileLayoutProps) => {
                 id="mobile-layout"
             >
                 {!shell && <WindowBar />}
+                {!shell && <MobileBack />}
                 <main className={styles.mainContent}>
                     <Suspense fallback={<Spinner container />}>
                         <Outlet />
