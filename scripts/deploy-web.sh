@@ -10,7 +10,7 @@ set -euo pipefail
 # Override for your own host, e.g.
 #   FEISHIN_HOST=192.0.2.10 FEISHIN_DEST=/srv/feishin/web scripts/deploy-web.sh
 HOST="${FEISHIN_HOST:?set FEISHIN_HOST to the host running the nginx container}"
-DEST="${FEISHIN_DEST:-/srv/feishin/web}"
+DEST="${FEISHIN_DEST:-/home/miles/media-stack/feishin/web}"
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 export PATH="$HOME/.local/bin:$PATH"
