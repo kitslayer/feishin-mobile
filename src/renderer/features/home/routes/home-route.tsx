@@ -2,6 +2,7 @@ import { Suspense, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useGridCarouselContainerQuery } from '/@/renderer/components/grid-carousel/grid-carousel-v2';
+import { useIsMobile } from '/@/renderer/hooks/use-is-mobile';
 import { NativeScrollArea } from '/@/renderer/components/native-scroll-area/native-scroll-area';
 import { AlbumInfiniteCarousel } from '/@/renderer/features/albums/components/album-infinite-carousel';
 import { AlbumInfiniteFeatureCarousel } from '/@/renderer/features/home/components/album-infinite-feature-carousel';
@@ -41,6 +42,7 @@ const HomeRoute = () => {
     const homeFeatureStyle = useHomeFeatureStyle();
     const homeItems = useHomeItems();
     const containerQuery = useGridCarouselContainerQuery();
+    const isMobile = useIsMobile();
 
     const isJellyfin = server?.type === ServerType.JELLYFIN;
 
@@ -82,7 +84,17 @@ const HomeRoute = () => {
         },
     };
 
-    const sortedItems = homeItems.filter((item) => !item.disabled);
+    // The saved desktop order commonly starts with the feature carousel and Genres.
+    // On a phone that created a 500px, mouse-only hero before any useful music.
+    // Reuse the existing server-backed shelves, but give mobile a deliberate order.
+    const sortedItems = isMobile
+        ? [
+              { disabled: false, id: HomeItem.RECENTLY_PLAYED },
+              { disabled: false, id: HomeItem.RECENTLY_ADDED },
+              { disabled: false, id: HomeItem.MOST_PLAYED },
+              { disabled: false, id: HomeItem.RANDOM },
+          ]
+        : homeItems.filter((item) => !item.disabled);
 
     const sortedCarousel = sortedItems
         .filter((item) => item.id !== HomeItem.GENRES)
@@ -107,21 +119,21 @@ const HomeRoute = () => {
             >
                 <LibraryContainer>
                     <Stack
-                        gap="2xl"
+                        gap={isMobile ? 'xl' : '2xl'}
                         mb="5rem"
-                        pt={windowBarStyle === Platform.WEB ? '5rem' : '3rem'}
-                        px="2rem"
+                        pt={isMobile ? '1rem' : windowBarStyle === Platform.WEB ? '5rem' : '3rem'}
+                        px={isMobile ? '1rem' : '2rem'}
                         ref={containerQuery.ref}
                     >
-                        {homeFeature && homeFeatureStyle === HomeFeatureStyle.SINGLE && (
+                        {!isMobile && homeFeature && homeFeatureStyle === HomeFeatureStyle.SINGLE && (
                             <AlbumInfiniteSingleFeatureCarousel />
                         )}
-                        {homeFeature && homeFeatureStyle === HomeFeatureStyle.MULTIPLE && (
+                        {!isMobile && homeFeature && homeFeatureStyle === HomeFeatureStyle.MULTIPLE && (
                             <AlbumInfiniteFeatureCarousel />
                         )}
                         {sortedItems.map((item) => {
                             if (item.id === HomeItem.GENRES) {
-                                return <FeaturedGenres key="featured-genres" />;
+                                return isMobile ? null : <FeaturedGenres key="featured-genres" />;
                             }
 
                             const carousel = sortedCarousel.find((c) => c.uniqueId === item.id);

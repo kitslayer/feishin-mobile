@@ -142,5 +142,17 @@
 
     .metadata-column {
         align-items: flex-start;
+        text-align: left;
+    }
+
+    .external-links-group,
+    .metadata-pill-group {
+        justify-content: flex-start;
+        align-items: flex-start;
+    }
+
+    .pill-group-wrapper,
+    .pill-group-wrapper > div {
+        justify-content: flex-start;
     }
 }

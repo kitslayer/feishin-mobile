@@ -3,7 +3,7 @@
 
     /* Sits inside main-content, which already starts below the Dynamic Island,
        so this only needs a small offset of its own. */
-    top: calc(env(safe-area-inset-top) + 0.5rem);
+    top: calc(env(safe-area-inset-top) + 0.25rem);
     left: calc(env(safe-area-inset-left) + 0.5rem);
     z-index: 150;
 

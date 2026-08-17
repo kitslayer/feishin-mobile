@@ -1,4 +1,6 @@
 import { MouseEvent } from 'react';
+
+import styles from './playlist-list-header-filters.module.css';
 import { useTranslation } from 'react-i18next';
 
 import { PLAYLIST_TABLE_COLUMNS } from '/@/renderer/components/item-list/item-table-list/default-columns';
@@ -8,6 +10,7 @@ import { ListDisplayTypeToggleButton } from '/@/renderer/features/shared/compone
 import { ListRefreshButton } from '/@/renderer/features/shared/components/list-refresh-button';
 import { ListSortByDropdown } from '/@/renderer/features/shared/components/list-sort-by-dropdown';
 import { ListSortOrderToggleButton } from '/@/renderer/features/shared/components/list-sort-order-toggle-button';
+import { useIsMobile } from '/@/renderer/hooks/use-is-mobile';
 import { useCurrentServer } from '/@/renderer/store';
 import { Button } from '/@/shared/components/button/button';
 import { Divider } from '/@/shared/components/divider/divider';
@@ -18,6 +21,7 @@ import { ItemListKey } from '/@/shared/types/types';
 
 export const PlaylistListHeaderFilters = () => {
     const { t } = useTranslation();
+    const isMobile = useIsMobile();
 
     const server = useCurrentServer();
 
@@ -26,7 +30,7 @@ export const PlaylistListHeaderFilters = () => {
     };
 
     return (
-        <Flex justify="space-between">
+        <Flex className={isMobile ? styles.mobileToolbar : undefined} justify="space-between">
             <Group gap="sm" w="100%">
                 <ListSortByDropdown
                     defaultSortByValue={PlaylistListSort.NAME}

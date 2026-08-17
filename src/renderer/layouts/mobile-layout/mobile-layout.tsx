@@ -13,7 +13,11 @@ import { MobileBack } from '/@/renderer/layouts/mobile-layout/mobile-back';
 import { MobileTabBar } from '/@/renderer/layouts/mobile-layout/mobile-tab-bar';
 import { PlayerBar } from '/@/renderer/layouts/default-layout/player-bar';
 import { WindowBar } from '/@/renderer/layouts/window-bar';
-import { useFullScreenPlayerOverlayState, useWindowBarStyle } from '/@/renderer/store';
+import {
+    useFullScreenPlayerOverlayState,
+    usePlayerSong,
+    useWindowBarStyle,
+} from '/@/renderer/store';
 import { Drawer } from '/@/shared/components/drawer/drawer';
 import { Spinner } from '/@/shared/components/spinner/spinner';
 import { useDisclosure } from '/@/shared/hooks/use-disclosure';
@@ -38,6 +42,7 @@ export const MobileLayout = ({ shell }: MobileLayoutProps) => {
         visualizerExpanded: isFullScreenVisualizerExpanded,
     } = useFullScreenPlayerOverlayState();
     const windowBarStyle = useWindowBarStyle();
+    const currentSong = usePlayerSong();
 
     return (
         <>
@@ -45,6 +50,7 @@ export const MobileLayout = ({ shell }: MobileLayoutProps) => {
                 className={clsx(styles.layout, {
                     [styles.macos]: windowBarStyle === Platform.MACOS,
                     [styles.windows]: windowBarStyle === Platform.WINDOWS,
+                    [styles.idlePlayer]: !currentSong?.id,
                 })}
                 id="mobile-layout"
             >
@@ -55,7 +61,7 @@ export const MobileLayout = ({ shell }: MobileLayoutProps) => {
                         <Outlet />
                     </Suspense>
                 </main>
-                <PlayerBar />
+                {currentSong?.id && <PlayerBar />}
                 {!shell && (
                     <div className={styles.tabBarArea}>
                         <MobileTabBar onMore={openSidebar} />

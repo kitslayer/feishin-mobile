@@ -72,3 +72,13 @@
     grid-area: tab-bar;
     min-width: 0;
 }
+
+/* Idle is a normal app state, not a broken player. Reclaim the empty 90px
+   player row until a queue supplies a real song. */
+.idle-player {
+    grid-template-rows:
+        env(safe-area-inset-top)
+        calc(100dvh - 49px - env(safe-area-inset-top) - env(safe-area-inset-bottom))
+        0
+        calc(49px + env(safe-area-inset-bottom));
+}

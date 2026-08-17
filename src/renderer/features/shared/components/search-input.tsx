@@ -106,10 +106,11 @@ export const SearchInput = ({
             overflow: 'hidden',
             position: 'relative',
             transition: 'width 0.3s ease-in-out',
+            maxWidth: '100%',
+            minWidth: 0,
             ...(fillContainer
                 ? {
                       flex: '1 1 0',
-                      minWidth: 0,
                       width: shouldExpand ? '100%' : '36px',
                   }
                 : {
@@ -134,6 +135,8 @@ export const SearchInput = ({
 
     const inputStyle: CSSProperties = useMemo(
         () => ({
+            maxWidth: '100%',
+            minWidth: 0,
             opacity: shouldShowInput ? 1 : 0,
             transition: 'opacity 0.2s ease-in-out',
             width: '100%',

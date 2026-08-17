@@ -6,3 +6,9 @@
         justify-content: flex-start;
     }
 }
+
+@media (width < 768px) {
+    .metadata-group {
+        justify-content: flex-start;
+    }
+}

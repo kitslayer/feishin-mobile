@@ -109,6 +109,61 @@ check('logged in / past server form', !(await page.locator('input[type=password]
 const blocked = await dismissModals();
 check('no modal blocking the UI', blocked === 0, `dialogs=${blocked}`);
 
+// ---- phone-first navigation and layout checks ----
+log('\\n== mobile navigation ==');
+const initialPlayerbar = page.locator('[class*="mobile-playerbar"]').first();
+check(
+    'idle launch has no placeholder player bar',
+    (await initialPlayerbar.count()) === 0,
+    `bars=${await initialPlayerbar.count()}`,
+);
+
+const moreTab = page.locator('#mobile-layout').getByRole('button', { name: /^More$/i }).last();
+check('More tab is reachable', (await moreTab.count()) === 1);
+if (await moreTab.count()) {
+    await moreTab.tap({ timeout: 5000 }).catch((e) => log('  More tap:', e.message.slice(0, 60)));
+    await page.waitForTimeout(600);
+}
+const mobileSidebar = page.locator('#mobile-sidebar');
+check('More opens the grouped mobile drawer', await mobileSidebar.isVisible().catch(() => false));
+const settingsLink = mobileSidebar.getByRole('link', { name: /^Settings$/i });
+check('Settings is reachable from More', (await settingsLink.count()) === 1);
+check(
+    'More has no desktop browser-history controls',
+    (await mobileSidebar.locator('button').count()) === 0,
+    `buttons=${await mobileSidebar.locator('button').count()}`,
+);
+if (await settingsLink.count()) {
+    await settingsLink.tap({ timeout: 5000 }).catch((e) => log('  Settings tap:', e.message.slice(0, 60)));
+    await page.waitForTimeout(900);
+}
+check('Settings navigation works', page.url().includes('/settings'), page.url().split('#')[1]);
+check('drawer closes after navigation', !(await mobileSidebar.isVisible().catch(() => false)));
+
+await page.goto(URL + '/#/', { waitUntil: 'domcontentloaded' });
+await page.waitForTimeout(3500);
+check(
+    'mobile home excludes the inert feature hero',
+    (await page.locator('[class*="single-carousel-container"]').count()) === 0,
+    `heroes=${await page.locator('[class*="single-carousel-container"]').count()}`,
+);
+
+for (const [route, label] of [
+    ['/#/playlists', 'Playlists'],
+    ['/#/search/song', 'Search'],
+]) {
+    await page.goto(URL + route, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(2500);
+    const viewport = await page.evaluate(() => ({ scrollWidth: document.documentElement.scrollWidth, width: window.innerWidth }));
+    check(`${label} has no horizontal viewport overflow`, viewport.scrollWidth <= viewport.width + 1, `${viewport.scrollWidth}px/${viewport.width}px`);
+}
+
+await page.goto(URL + '/#/playlists', { waitUntil: 'domcontentloaded' });
+await page.waitForTimeout(2500);
+const mobileToolbar = page.locator('[class*="playlist-list-header-filters-module-mobile-toolbar"]');
+const toolbarDirection = await mobileToolbar.evaluate((el) => getComputedStyle(el).flexDirection).catch(() => 'missing');
+check('playlist toolbar uses two mobile rows', toolbarDirection === 'column', `flex-direction=${toolbarDirection}`);
+
 // ---- single tap must trigger a row's primary action, not need a double ----
 // Asserted via a network request rather than the queue: the player store only
 // persists once playback actually starts, which headless cannot do.
