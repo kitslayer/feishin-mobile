@@ -93,7 +93,16 @@ if (await dlg.count()) {
         );
     }
 }
-check('modal cleared', (await dismissModals()) === 0);
+const remaining = await dismissModals();
+if (remaining) {
+    const titles = await page.evaluate(() =>
+        [...document.querySelectorAll('[role="dialog"]')].map(
+            (d) => (d.textContent || '').trim().slice(0, 50),
+        ),
+    );
+    log('  remaining dialogs:', JSON.stringify(titles));
+}
+check('modal cleared', remaining === 0);
 
 // ---- log in ----
 if (await page.locator('input[type=password]').count()) {
@@ -103,10 +112,21 @@ if (await page.locator('input[type=password]').count()) {
     await page.getByRole('textbox', { name: 'Username' }).fill(USER);
     await page.locator('input[type=password]').first().fill(PASS);
     await page.waitForTimeout(600);
+    // The changelog modal fetches release notes, so it can mount *after* the
+    // form is filled and then intercept the submit click. Clear it again, and
+    // submit in-page so a portaled overlay cannot block the hit test.
+    await dismissModals();
     const add = page.getByRole('button', { name: /^(Add|Save|Sign in)$/i }).first();
     const enabled = await add.isEnabled().catch(() => false);
     log('  submit enabled:', enabled);
-    if (enabled) await add.click();
+    if (enabled) {
+        await page.evaluate(() => {
+            const target = [...document.querySelectorAll('button')].find((b) =>
+                /^(add|save|sign in)$/i.test((b.textContent || '').trim()),
+            );
+            target?.click();
+        });
+    }
     await page.waitForTimeout(7000);
 }
 check('logged in / past server form', !(await page.locator('input[type=password]').count()));
